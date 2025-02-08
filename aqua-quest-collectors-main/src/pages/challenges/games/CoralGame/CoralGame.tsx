@@ -1,12 +1,15 @@
-// CoralGame.tsx
+import React, { useState, useEffect, useRef } from "react";
+import { toast } from "sonner";
+import confetti from "canvas-confetti";
 
-import React, { useState, useEffect } from 'react';
-import { toast } from 'sonner';
-import confetti from 'canvas-confetti';
+// Sound imports (place them in your assets/sounds folder)
+import swapSoundFile from "/sounds/swap.mp3";
+import matchSoundFile from "/sounds/match.mp3";
+import winSoundFile from "/sounds/success.mp3";
 
 // UI / icons
-import Navigation from '@/components/Navigation';
-import { Button } from '@/components/ui/button';
+import Navigation from "@/components/Navigation";
+import { Button } from "@/components/ui/button";
 
 // Our decoupled subcomponents
 import {
@@ -15,7 +18,7 @@ import {
     TutorialModal,
     GameOverModal,
     GameBoard,
-} from './GameComponent';
+} from "./GameComponent";
 
 // Constants & types
 import {
@@ -27,7 +30,7 @@ import {
     GAME_MODES,
     GameMode,
     CORALS,
-} from './constant';
+} from "./constant";
 
 const CoralGame: React.FC = () => {
     // Game state
@@ -40,15 +43,59 @@ const CoralGame: React.FC = () => {
     const [combo, setCombo] = useState(0);
     const [showTutorial, setShowTutorial] = useState(true);
     const [gameMode, setGameMode] = useState<GameMode | null>(null);
-    const [collectedCorals, setCollectedCorals] = useState<Record<string, number>>({});
+
+    // Difficulty slider for Free Play (1 => easier, 10 => hardest)
+    const [freePlayDifficulty, setFreePlayDifficulty] = useState(5);
+
+    // Audio references
+    const swapAudio = useRef<HTMLAudioElement | null>(null);
+    const matchAudio = useRef<HTMLAudioElement | null>(null);
+    const winAudio = useRef<HTMLAudioElement | null>(null);
+
+    // For tracking which corals have been collected
+    const [collectedCorals, setCollectedCorals] = useState<Record<typeof CORALS.regular[number] | typeof CORALS.extended[number], number>>(() => {
+        const initialState: Record<typeof CORALS.regular[number] | typeof CORALS.extended[number], number> = {} as Record<typeof CORALS.regular[number] | typeof CORALS.extended[number], number>;
+        [...CORALS.regular, ...CORALS.extended].forEach(coral => {
+            initialState[coral] = 0;
+        });
+        return initialState;
+    });
     const [totalCollected, setTotalCollected] = useState(0);
+
+    // Initialize audio once
+    useEffect(() => {
+        swapAudio.current = new Audio(swapSoundFile);
+        matchAudio.current = new Audio(matchSoundFile);
+        winAudio.current = new Audio(winSoundFile);
+
+        // Optional: set volume levels
+        swapAudio.current.volume = 0.6;
+        matchAudio.current.volume = 0.65;
+        winAudio.current.volume = 0.7;
+    }, []);
 
     // Whenever the user selects a mode, initialize the game
     useEffect(() => {
         if (gameMode) {
             initializeGame();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [gameMode]);
+
+    // -----------------------------------
+    // Difficulty-based coral sets
+    // -----------------------------------
+    const getCoralSet = () => {
+        if (gameMode === GAME_MODES.CHALLENGE) {
+            // Keep it the original 6 regular for challenge mode
+            return CORALS.regular;
+        } else {
+            // The higher the difficulty, the more corals we pull from “extended”
+            // e.g. difficulty 1 => 6 corals, difficulty 10 => 12 corals
+            const totalTypes = 6 + Math.floor((freePlayDifficulty / 10) * CORALS.extended.length);
+            return [...CORALS.regular, ...CORALS.extended].slice(0, totalTypes);
+        }
+    };
 
     // Setup a fresh grid and reset relevant state
     const initializeGame = () => {
@@ -57,18 +104,25 @@ const CoralGame: React.FC = () => {
         setMoves(gameMode === GAME_MODES.CHALLENGE ? INITIAL_MOVES : Infinity);
         setGameOver(false);
         setCombo(0);
-        setCollectedCorals({});
+        setCollectedCorals(() => {
+            const initialState: Record<typeof CORALS.regular[number] | typeof CORALS.extended[number], number> = {} as Record<typeof CORALS.regular[number] | typeof CORALS.extended[number], number>;
+            [...CORALS.regular, ...CORALS.extended].forEach(coral => {
+                initialState[coral] = 0;
+            });
+            return initialState;
+        });
         setTotalCollected(0);
-        setShowTutorial(true); // Optionally show tutorial every time mode is selected
+        setShowTutorial(true); // show tutorial each time mode is selected
     };
 
     const initializeGrid = () => {
+        const coralSet = getCoralSet();
         const newGrid = Array(GRID_SIZE)
             .fill(null)
             .map(() =>
                 Array(GRID_SIZE)
                     .fill(null)
-                    .map(() => CORALS.regular[Math.floor(Math.random() * CORALS.regular.length)])
+                    .map(() => coralSet[Math.floor(Math.random() * coralSet.length)])
             );
         setGrid(newGrid);
     };
@@ -87,25 +141,46 @@ const CoralGame: React.FC = () => {
             setSelectedCell({ row, col });
         } else {
             if (isAdjacent(selectedCell, { row, col })) {
+                // Play swap sound
+                swapAudio.current?.play();
                 swapCells(selectedCell, { row, col });
             }
             setSelectedCell(null);
         }
     };
 
-    // 10% chance to spawn a special piece
+    /**
+     * Generate power-ups.
+     * On higher difficulties, we can actually LOWER the chance
+     * to get a special piece => making the game harder to clear matches.
+     */
     const generatePowerUp = (): string | null => {
-        if (Math.random() < 0.1) {
-            const powerUps = Object.values(CORALS.special) as string[];
-            return powerUps[Math.floor(Math.random() * powerUps.length)];
+        if (gameMode === GAME_MODES.FREE) {
+            // baseChance: 10%, minus up to 7% for difficulty (just an example)
+            const difficultyPenalty = (freePlayDifficulty - 1) * 0.007; // ~0.063 at diff=10
+            const actualChance = 0.1 - difficultyPenalty;
+            if (Math.random() < Math.max(actualChance, 0.01)) {
+                const powerUps = Object.values(CORALS.special) as string[];
+                return powerUps[Math.floor(Math.random() * powerUps.length)];
+            }
+        } else {
+            // Challenge mode => flat 10% chance
+            if (Math.random() < 0.1) {
+                const powerUps = Object.values(CORALS.special) as string[];
+                return powerUps[Math.floor(Math.random() * powerUps.length)];
+            }
         }
         return null;
     };
 
-    const swapCells = async (cell1: { row: number; col: number }, cell2: { row: number; col: number }) => {
+    const swapCells = async (
+        cell1: { row: number; col: number },
+        cell2: { row: number; col: number }
+    ) => {
         setIsAnimating(true);
-        const newGrid = structuredClone(grid); // or [...grid] (with deeper copy for nested arrays)
+        const newGrid = structuredClone(grid);
 
+        // Perform swap
         const temp = newGrid[cell1.row][cell1.col];
         newGrid[cell1.row][cell1.col] = newGrid[cell2.row][cell2.col];
         newGrid[cell2.row][cell2.col] = temp;
@@ -131,7 +206,8 @@ const CoralGame: React.FC = () => {
     const updateCollection = (matchedCoralsArr: string[]) => {
         const updated = { ...collectedCorals };
         matchedCoralsArr.forEach((coral) => {
-            if (CORALS.regular.includes(coral as typeof CORALS.regular[number])) {
+            // Only track if it’s a normal coral
+            if ([...CORALS.regular, ...CORALS.extended].includes(coral as typeof CORALS.regular[number] | typeof CORALS.extended[number])) {
                 updated[coral] = (updated[coral] || 0) + 1;
                 setTotalCollected((prev) => prev + 1);
             }
@@ -190,9 +266,12 @@ const CoralGame: React.FC = () => {
         }
 
         if (hasMatches) {
-            // Check for BOMB/LINE, etc.
+            // We have a match => play match sound
+            matchAudio.current?.play();
+
+            // Expand for bombs/lines, etc.
             matchPositions.forEach((pos) => {
-                const [r, c] = pos.split(',').map(Number);
+                const [r, c] = pos.split(",").map(Number);
                 const piece = currentGrid[r][c];
                 if (piece === CORALS.special.BOMB) {
                     // Clear the surrounding 3x3
@@ -201,11 +280,13 @@ const CoralGame: React.FC = () => {
                             const newR = r + rr;
                             const newC = c + cc;
                             if (
-                                newR >= 0 && newR < GRID_SIZE &&
-                                newC >= 0 && newC < GRID_SIZE
+                                newR >= 0 &&
+                                newR < GRID_SIZE &&
+                                newC >= 0 &&
+                                newC < GRID_SIZE
                             ) {
                                 matchPositions.add(`${newR},${newC}`);
-                                matchedCoralsArr.push(currentGrid[newR][newC] || '');
+                                matchedCoralsArr.push(currentGrid[newR][newC] || "");
                             }
                         }
                     }
@@ -213,9 +294,9 @@ const CoralGame: React.FC = () => {
                     // Clear entire row & column
                     for (let i = 0; i < GRID_SIZE; i++) {
                         matchPositions.add(`${r},${i}`);
-                        matchedCoralsArr.push(currentGrid[r][i] || '');
+                        matchedCoralsArr.push(currentGrid[r][i] || "");
                         matchPositions.add(`${i},${c}`);
-                        matchedCoralsArr.push(currentGrid[i][c] || '');
+                        matchedCoralsArr.push(currentGrid[i][c] || "");
                     }
                 }
             });
@@ -223,7 +304,7 @@ const CoralGame: React.FC = () => {
             // Clear matched positions
             const newGrid = structuredClone(currentGrid);
             matchPositions.forEach((pos) => {
-                const [r, c] = pos.split(',').map(Number);
+                const [r, c] = pos.split(",").map(Number);
                 newGrid[r][c] = null;
             });
 
@@ -233,15 +314,19 @@ const CoralGame: React.FC = () => {
                 const points = matchPositions.size * POINTS_PER_MATCH;
                 setScore((s) => s + points);
             }
+
             setCombo((c) => c + 1);
             setGrid(newGrid);
             triggerMatchEffects();
 
-            // Wait a bit, then drop/fill
-            await new Promise((resolve) => setTimeout(resolve, 300));
+            // Animate matched pieces a moment before dropping
+            // (Optional: you could do more advanced transitions with a "matchedCells" state.)
+            await new Promise((resolve) => setTimeout(resolve, 350));
+
+            // Then drop/fill
             await fillEmptyCells(newGrid);
 
-            // In challenge mode, check for win
+            // Check for winning conditions in Challenge
             if (gameMode === GAME_MODES.CHALLENGE && score >= WINNING_SCORE) {
                 setGameOver(true);
                 triggerWinEffects();
@@ -259,7 +344,6 @@ const CoralGame: React.FC = () => {
         const newGrid = structuredClone(currentGrid);
         let hasEmpty = false;
 
-        // "Fall down" logic
         for (let col = 0; col < GRID_SIZE; col++) {
             let writeRow = GRID_SIZE - 1;
             for (let row = GRID_SIZE - 1; row >= 0; row--) {
@@ -273,67 +357,75 @@ const CoralGame: React.FC = () => {
                 }
             }
             // Now fill remaining with new pieces
+            const coralSet = getCoralSet();
             for (let row = writeRow; row >= 0; row--) {
                 const powerUp = generatePowerUp();
-                newGrid[row][col] = powerUp || CORALS.regular[Math.floor(Math.random() * CORALS.regular.length)];
+                newGrid[row][col] = powerUp ?? coralSet[Math.floor(Math.random() * coralSet.length)];
                 hasEmpty = true;
             }
         }
 
         if (hasEmpty) {
             setGrid(newGrid);
+            // Wait for drop animation
             await new Promise((resolve) => setTimeout(resolve, 300));
+            // Check for new matches after fill
             await checkMatches(newGrid);
         } else {
-            // If no empties, just free up animations
+            // If no empties, free up animations
             setIsAnimating(false);
         }
     };
 
     const triggerMatchEffects = () => {
+        // Casino-like confetti burst
         confetti({
-            particleCount: 30,
-            spread: 50,
+            particleCount: 35,
+            spread: 60,
             origin: { y: 0.6 },
-            colors: ['#6bd5e1', '#8edbe5', '#bff7f2'],
+            colors: ["#ffe55c", "#ffc9ff", "#bff7f2"],
         });
     };
 
     const triggerWinEffects = () => {
+        winAudio.current?.play();
         confetti({
             particleCount: 200,
-            spread: 100,
+            spread: 120,
             origin: { y: 0.6 },
-            colors: ['#00aaff', '#5bf5ee', '#c3f0f9'],
+            colors: ["#00aaff", "#5bf5ee", "#ffc700"],
         });
         toast.success("You've restored the coral reef!");
     };
 
     const handleModeSelect = (mode: GameMode) => {
         setGameMode(mode);
-        // This will trigger `useEffect` => initializeGame()
     };
 
-    // --------------------- RENDERING ---------------------
+    // -----------------------------------
+    // Render
+    // -----------------------------------
     return (
-        <div className="min-h-screen bg-gradient-to-b from-sky-100 to-white pb-20 md:pb-0 md:pt-20">
+        <div className="min-h-screen bg-gradient-to-b from-sky-100 to-white pb-20 md:pb-0 md:pt-20 relative overflow-hidden">
             <Navigation />
             <main className="max-w-screen-xl mx-auto px-4 py-8">
-                {/* If no mode selected => show mode selection */}
                 {!gameMode ? (
-                    <ModeSelection onModeSelect={handleModeSelect} />
+                    <ModeSelection
+                        onModeSelect={handleModeSelect}
+                        freePlayDifficulty={freePlayDifficulty}
+                        setFreePlayDifficulty={setFreePlayDifficulty}
+                    />
                 ) : (
                     <div>
-                        {/* Stats board */}
                         <StatsBoard
                             gameMode={gameMode}
                             score={score}
                             moves={Number.isFinite(moves) ? moves : 99999}
                             totalCollected={totalCollected}
                             collectedCorals={collectedCorals}
+                            freePlayDifficulty={freePlayDifficulty}
                         />
 
-                        {/* Game Board */}
                         <GameBoard
                             grid={grid}
                             selectedCell={selectedCell}
@@ -342,7 +434,6 @@ const CoralGame: React.FC = () => {
                             onCellClick={handleCellClick}
                         />
 
-                        {/* Game controls */}
                         <div className="mt-8 space-y-4 text-center">
                             <div className="flex justify-center gap-4">
                                 <Button
@@ -362,7 +453,6 @@ const CoralGame: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Game Over Modal */}
                         <GameOverModal
                             show={gameOver}
                             score={score}
@@ -372,7 +462,6 @@ const CoralGame: React.FC = () => {
                             onChangeMode={() => setGameMode(null)}
                         />
 
-                        {/* Tutorial Modal */}
                         <TutorialModal
                             showTutorial={showTutorial}
                             onClose={() => setShowTutorial(false)}

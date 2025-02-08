@@ -1,27 +1,37 @@
-// GameComponents.tsx
-
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Trophy, Timer, Shell } from 'lucide-react';
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Trophy, Timer, Shell, Fish } from "lucide-react";
 import {
     GAME_MODES,
     GameMode,
     WINNING_SCORE,
     INITIAL_MOVES,
     CORALS,
-} from './constant';
+} from "./constant";
+
 
 /* -------------------------------------------------------------------------- */
 /*                               MODE SELECTION                               */
 /* -------------------------------------------------------------------------- */
 interface ModeSelectionProps {
     onModeSelect: (mode: GameMode) => void;
+    freePlayDifficulty: number;
+    setFreePlayDifficulty: (value: number) => void;
 }
 
-export const ModeSelection: React.FC<ModeSelectionProps> = ({ onModeSelect }) => {
+export const ModeSelection: React.FC<ModeSelectionProps> = ({
+    onModeSelect,
+    freePlayDifficulty,
+    setFreePlayDifficulty,
+}) => {
     return (
-        <div className="text-center">
+        <motion.div
+            className="text-center"
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: "spring", damping: 15 }}
+        >
             <h1 className="text-4xl font-bold text-gray-900 mb-8 font-pixel animate-float">
                 Select Game Mode
             </h1>
@@ -29,7 +39,8 @@ export const ModeSelection: React.FC<ModeSelectionProps> = ({ onModeSelect }) =>
                 {/* Challenge Mode */}
                 <motion.div
                     whileHover={{ scale: 1.05 }}
-                    className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-blue-100 shadow-lg"
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-white/90 backdrop-blur-lg rounded-2xl p-6 border border-blue-100 shadow-lg"
                 >
                     <h2 className="text-2xl font-bold mb-2">Challenge Mode</h2>
                     <p className="text-gray-600 mb-4">
@@ -39,26 +50,36 @@ export const ModeSelection: React.FC<ModeSelectionProps> = ({ onModeSelect }) =>
                         Start Challenge
                     </Button>
                 </motion.div>
-
-                {/* Free Play Mode */}
                 <motion.div
                     whileHover={{ scale: 1.05 }}
-                    className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-blue-100 shadow-lg"
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-gradient-to-tr from-blue-50 via-sky-50 to-blue-100 backdrop-blur-lg rounded-2xl p-6 border border-blue-200 shadow-xl"
                 >
-                    <h2 className="text-2xl font-bold mb-2">Free Play Mode</h2>
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                        <Fish className="w-6 h-6 text-blue-400" />
+                        <h2 className="text-2xl font-bold text-blue-700">Free Play Mode</h2>
+                    </div>
                     <p className="text-gray-600 mb-4">
-                        Collect as many sea creatures as you can!
+                        Dive in and collect as many sea creatures as possible! Adjust your difficulty:
                     </p>
-                    <Button
-                        onClick={() => onModeSelect(GAME_MODES.FREE)}
-                        className="w-full"
-                        variant="outline"
-                    >
-                        Start Free Play
+                    <div className="flex items-center gap-2 mb-4 justify-center">
+                        <span className="text-sm font-semibold text-blue-500">Easy</span>
+                        <input
+                            type="range"
+                            min={1}
+                            max={10}
+                            value={freePlayDifficulty}
+                            onChange={(e) => setFreePlayDifficulty(Number(e.target.value))}
+                            className="w-1/2 accent-blue-400 cursor-pointer"
+                        />
+                        <span className="text-sm font-semibold text-blue-500">Hard</span>
+                    </div>
+                    <Button onClick={() => onModeSelect(GAME_MODES.FREE)} className="w-full" variant="outline">
+                        Begin Adventure (Difficulty: {freePlayDifficulty})
                     </Button>
                 </motion.div>
             </div>
-        </div>
+        </motion.div>
     );
 };
 
@@ -68,9 +89,10 @@ export const ModeSelection: React.FC<ModeSelectionProps> = ({ onModeSelect }) =>
 interface StatsBoardProps {
     gameMode: GameMode;
     score: number;
-    moves: number;        // can be Infinity as well, but typed as number for simplicity
+    moves: number; // can be Infinity as well, but typed as number for simplicity
     totalCollected: number;
     collectedCorals: Record<string, number>;
+    freePlayDifficulty: number;
 }
 
 export const StatsBoard: React.FC<StatsBoardProps> = ({
@@ -79,11 +101,17 @@ export const StatsBoard: React.FC<StatsBoardProps> = ({
     moves,
     totalCollected,
     collectedCorals,
+    freePlayDifficulty,
 }) => {
     return (
-        <div className="text-center mb-8">
+        <motion.div
+            className="text-center mb-8"
+            initial={{ opacity: 0, y: -30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: "spring", damping: 15 }}
+        >
             <h1 className="text-4xl font-bold text-gray-900 mb-4 font-pixel animate-float">
-                {gameMode === GAME_MODES.CHALLENGE ? 'Challenge Mode' : 'Free Play'}
+                {gameMode === GAME_MODES.CHALLENGE ? "Challenge Mode" : "Free Play"}
             </h1>
 
             {/* Stats Dashboard */}
@@ -114,7 +142,10 @@ export const StatsBoard: React.FC<StatsBoardProps> = ({
                 <h3 className="text-lg font-bold mb-2">Collection Progress</h3>
                 <div className="grid grid-cols-3 gap-2">
                     {CORALS.regular.map((coral) => (
-                        <div key={coral} className="flex items-center justify-between p-2 bg-blue-50 rounded-lg">
+                        <div
+                            key={coral}
+                            className="flex items-center justify-between p-2 bg-blue-50 rounded-lg"
+                        >
                             <span className="text-2xl">{coral}</span>
                             <span className="font-bold text-blue-600">{collectedCorals[coral] || 0}</span>
                         </div>
@@ -122,13 +153,16 @@ export const StatsBoard: React.FC<StatsBoardProps> = ({
                 </div>
             </div>
 
-            {/* Depending on the mode */}
             {gameMode === GAME_MODES.CHALLENGE ? (
                 <p className="text-gray-600">Score {WINNING_SCORE} points to win!</p>
             ) : (
-                <p className="text-gray-600">Match corals to collect them!</p>
+                <p className="text-gray-600">
+                    Match corals to collect them!
+                    <br />
+                    Current Difficulty: <span className="font-semibold">{freePlayDifficulty}</span>
+                </p>
             )}
-        </div>
+        </motion.div>
     );
 };
 
@@ -240,7 +274,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
                         exit={{ scale: 0.8, opacity: 0 }}
                     >
                         <h2 className="text-3xl font-bold mb-4">
-                            {score >= WINNING_SCORE ? 'Victory! 🎉' : 'Game Over'}
+                            {score >= WINNING_SCORE ? "Victory! 🎉" : "Game Over"}
                         </h2>
                         <div className="space-y-4">
                             <p className="text-xl">Final Score: {score}</p>
@@ -249,9 +283,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
                                 {CORALS.regular.map((coral) => (
                                     <div key={coral} className="text-center p-2 bg-blue-50 rounded-lg">
                                         <div className="text-2xl mb-1">{coral}</div>
-                                        <div className="font-bold text-blue-600">
-                                            {collectedCorals[coral] || 0}
-                                        </div>
+                                        <div className="font-bold text-blue-600">{collectedCorals[coral] || 0}</div>
                                     </div>
                                 ))}
                             </div>
@@ -290,7 +322,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     onCellClick,
 }) => {
     return (
-        <div className="flex justify-center">
+        <motion.div
+            className="flex justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+        >
             <div className="grid gap-1 bg-white/80 backdrop-blur-md rounded-2xl p-4 border border-blue-100 shadow-lg">
                 {grid.map((row, rowIndex) => (
                     <div key={rowIndex} className="flex gap-1">
@@ -303,22 +340,23 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                                     key={`${rowIndex}-${colIndex}`}
                                     onClick={() => onCellClick(rowIndex, colIndex)}
                                     disabled={isAnimating || gameOver}
-                                    className={`w-14 h-14 flex items-center justify-center rounded-xl text-2xl
-                    ${isSelected
-                                            ? 'bg-blue-300/20 scale-110'
-                                            : 'bg-blue-300/5 hover:bg-blue-300/10'
-                                        }
+                                    className={`
+                    w-14 h-14 flex items-center justify-center rounded-xl text-2xl
                     transition-all duration-300
+                    ${isSelected
+                                            ? "bg-blue-300/20 scale-110"
+                                            : "bg-blue-300/5 hover:bg-blue-300/10"
+                                        }
                   `}
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.95 }}
+                                    whileHover={{ scale: 1.15, rotate: 10 }}
+                                    whileTap={{ scale: 0.9, rotate: -5 }}
                                     layout
                                 >
                                     <motion.span
                                         className="pointer-events-none"
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1 }}
-                                        exit={{ scale: 0 }}
+                                        initial={{ scale: 0, rotate: -180 }}
+                                        animate={{ scale: 1, rotate: 0 }}
+                                        transition={{ type: "spring", stiffness: 70 }}
                                     >
                                         {cell}
                                     </motion.span>
@@ -328,6 +366,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                     </div>
                 ))}
             </div>
-        </div>
+        </motion.div>
     );
 };
+

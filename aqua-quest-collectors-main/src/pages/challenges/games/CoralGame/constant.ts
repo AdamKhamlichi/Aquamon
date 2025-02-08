@@ -14,8 +14,10 @@ export const GAME_MODES = {
 // Type for game mode (either "challenge" or "free")
 export type GameMode = (typeof GAME_MODES)[keyof typeof GAME_MODES];
 
+// constants.ts
 export const CORALS = {
   regular: ["🪸", "🐠", "🐡", "🐙", "🦀", "🦐"],
+  extended: ["🐟", "🐋", "🐳", "🐬", "🦑", "🐢"],
   special: {
     RAINBOW: "🌈",
     BOMB: "💫",
