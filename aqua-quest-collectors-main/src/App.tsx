@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// File: src/App.tsx
 
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -11,7 +13,7 @@ import Index from "./pages/Index";
 import Social from "./pages/Social";
 import Chat from "./pages/Chat";
 import Pokedex from "./pages/Pokedex";
-import Challenges from "./pages/Challenges";
+import { ChallengesList, ChallengeWrapper } from "./pages/Challenges"; // Modified import
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,13 +23,11 @@ const App = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check active session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
     });
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -38,7 +38,7 @@ const App = () => {
   }, []);
 
   if (loading) {
-    return null; // Or a loading spinner
+    return null;
   }
 
   return (
@@ -48,9 +48,9 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route 
-              path="/login" 
-              element={session ? <Navigate to="/" replace /> : <Login />} 
+            <Route
+              path="/login"
+              element={session ? <Navigate to="/" replace /> : <Login />}
             />
             <Route
               path="/"
@@ -68,9 +68,14 @@ const App = () => {
               path="/pokedex"
               element={session ? <Pokedex /> : <Navigate to="/login" replace />}
             />
+            {/* Modified challenge routes */}
             <Route
               path="/challenges"
-              element={session ? <Challenges /> : <Navigate to="/login" replace />}
+              element={session ? <ChallengesList /> : <Navigate to="/login" replace />}
+            />
+            <Route
+              path="/challenges/:challengeId"
+              element={session ? <ChallengeWrapper /> : <Navigate to="/login" replace />}
             />
             <Route path="*" element={<NotFound />} />
           </Routes>
