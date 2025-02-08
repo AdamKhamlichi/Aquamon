@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
 
 // Import games
-const CoralGame = React.lazy(() => import('./games/CoralGame'));
+const CoralGame = React.lazy(() => import('./games/CoralGame/CoralGame'));
 
 const ChallengeWrapper = () => {
     const { challengeId } = useParams();
@@ -111,3 +111,25 @@ const ChallengesList = () => {
 };
 
 export { ChallengeWrapper, ChallengesList };
+
+
+
+//
+// if (hasMatches) {
+//     // Clear matches and update score
+//     const newGrid = [...currentGrid];
+//     matchPositions.forEach((pos) => {
+//         const [row, col] = (pos as string).split(',').map(Number);
+//         newGrid[row][col] = null;
+//     });
+
+//     setScore((prev) => prev + matchPositions.size * POINTS_PER_MATCH);
+//     setCombo((prev) => prev + 1);
+//     setGrid(newGrid);
+
+//     // Trigger effects
+//     triggerMatchEffects();
+
+//     await new Promise((resolve) => setTimeout(resolve, 300));
+//     await fillEmptyCells(newGrid);
+// }

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
 
 // Lazy load the CoralGame component
-const CoralGame = React.lazy(() => import('./challenges/games/CoralGame'));
+const CoralGame = React.lazy(() => import('./challenges/games/CoralGame/CoralGame'));
 
 export const ChallengeWrapper = () => {
   const { challengeId } = useParams();
