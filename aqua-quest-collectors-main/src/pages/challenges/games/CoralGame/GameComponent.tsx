@@ -43,138 +43,75 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
     onSelectLevel,
     onBackToModeSelect,
 }) => {
-    // Sound refs: hover, select, move
-    const hoverSoundRef = useRef<HTMLAudioElement | null>(null);
-    const selectSoundRef = useRef<HTMLAudioElement | null>(null);
-    const moveSoundRef = useRef<HTMLAudioElement | null>(null);
-
-    // Currently focused node (keyboard)
     const [focusedIndex, setFocusedIndex] = useState<number | null>(() => {
         const firstUnlocked = levels.findIndex((l) => !l.locked);
         return firstUnlocked >= 0 ? firstUnlocked : null;
     });
 
-    useEffect(() => {
-        // Assign correct files to each ref
-        hoverSoundRef.current = new Audio("/sounds/mapHover.mp3");
-        moveSoundRef.current = new Audio("/sounds/mapMove.mp3");
-        selectSoundRef.current = new Audio("/sounds/mapSelect.mp3");
-
-        if (hoverSoundRef.current) hoverSoundRef.current.volume = 0.4;
-        if (moveSoundRef.current) moveSoundRef.current.volume = 0.4;
-        if (selectSoundRef.current) selectSoundRef.current.volume = 0.5;
-    }, []);
-
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (focusedIndex === null) return;
-            const code = e.code.toLowerCase();
-
-            if (["arrowup", "keyw"].includes(code)) {
-                moveFocus("up");
-            } else if (["arrowdown", "keys"].includes(code)) {
-                moveFocus("down");
-            } else if (["arrowleft", "keya"].includes(code)) {
-                moveFocus("left");
-            } else if (["arrowright", "keyd"].includes(code)) {
-                moveFocus("right");
-            } else if (["enter", "space"].includes(code)) {
-                const lvl = levels[focusedIndex];
-                if (!lvl.locked) {
-                    // SELECT sound
-                    selectSoundRef.current?.play().catch(() => { });
-                    onSelectLevel(focusedIndex);
-                }
-            }
-        };
-
-        window.addEventListener("keydown", handleKeyDown);
-        return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [focusedIndex, levels, onSelectLevel]);
-
-    function moveFocus(direction: "up" | "down" | "left" | "right") {
-        if (focusedIndex === null) return;
-        const current = levels[focusedIndex];
-        const neighbors = current.adjacency.map((i) => levels[i]);
-
-        let dx = 0;
-        let dy = 0;
-        if (direction === "up") dy = -1;
-        if (direction === "down") dy = +1;
-        if (direction === "left") dx = -1;
-        if (direction === "right") dx = +1;
-
-        let bestIndex: number | null = null;
-        let bestScore = -Infinity;
-
-        neighbors.forEach((nbr) => {
-            const vx = nbr.x - current.x;
-            const vy = nbr.y - current.y;
-
-            // only consider neighbors strictly in that direction
-            if (direction === "up" && vy >= 0) return;
-            if (direction === "down" && vy <= 0) return;
-            if (direction === "left" && vx >= 0) return;
-            if (direction === "right" && vx <= 0) return;
-
-            const dot = vx * dx + vy * dy;
-            if (dot > bestScore) {
-                bestScore = dot;
-                bestIndex = nbr.id;
-            }
-        });
-
-        if (bestIndex !== null) {
-            const idx = levels.findIndex((l) => l.id === bestIndex);
-            if (idx !== -1 && idx !== focusedIndex) {
-                // PLAY move SFX if actual movement
-                moveSoundRef.current?.play().catch(() => { });
-                setFocusedIndex(idx);
-            }
-        }
-    }
-
-    const handleNodeClick = (index: number) => {
-        setFocusedIndex(index);
-        const lvl = levels[index];
-        if (!lvl.locked) {
-            // SELECT sound
-            selectSoundRef.current?.play().catch(() => { });
-            onSelectLevel(index);
-        }
-    };
-
     return (
-        <div className="flex flex-col items-center justify-center gap-4">
-            <div
-                className="relative"
-                style={{
-                    width: "700px",
-                    height: "500px",
-                    background:
-                        "radial-gradient(circle at 50% 30%, rgba(28,174,255,0.4) 0%, rgba(0,176,255,0.2) 70%, transparent 100%)",
-                    backgroundColor: "#94e0ff",
-                    border: "4px solid #6fd3f9",
-                    borderRadius: "20px",
-                    position: "relative",
-                    boxShadow: "0 0 12px rgba(0, 164, 255, 0.3)",
-                }}
-            >
-                <h1 className="text-3xl font-bold text-sky-900 font-pixel animate-float text-center pt-2">
-                    Undersea Adventure
-                </h1>
-                <p className="text-center text-sky-700 mb-2">
-                    Use <strong>W/A/S/D</strong> or <strong>Arrows</strong>, Enter to Select
-                </p>
+        <div className="flex flex-col items-center justify-center gap-8">
+            <div className="relative w-[800px] h-[600px] bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 shadow-lg overflow-hidden">
+                {/* Background gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-b from-[#001440]/50 via-[#002d6b]/30 to-[#0056a8]/20" />
 
-                {/* Lines connecting adjacency */}
-                <svg className="absolute top-0 left-0 w-full h-full pointer-events-none">
+                {/* Decorative seaweed */}
+                {Array.from({ length: 6 }).map((_, i) => (
+                    <motion.div
+                        key={`seaweed-${i}`}
+                        className="absolute bottom-0 w-4 bg-gradient-to-t from-emerald-900/20 to-transparent"
+                        style={{
+                            left: `${10 + i * 20}%`,
+                            height: `${150 + Math.random() * 100}px`
+                        }}
+                        animate={{
+                            height: [`${150 + Math.random() * 100}px`, `${200 + Math.random() * 100}px`],
+                            skewX: [-10, 10]
+                        }}
+                        transition={{
+                            duration: 4 + Math.random() * 2,
+                            repeat: Infinity,
+                            repeatType: "reverse",
+                            ease: "easeInOut"
+                        }}
+                    />
+                ))}
+
+                {/* Ambient bubbles */}
+                <div className="absolute inset-0">
+                    {Array.from({ length: 15 }).map((_, i) => (
+                        <motion.div
+                            key={`bubble-${i}`}
+                            className="absolute w-3 h-3 rounded-full bg-white/20"
+                            initial={{
+                                x: Math.random() * 800,
+                                y: 600 + Math.random() * 100
+                            }}
+                            animate={{
+                                y: -20,
+                                x: `${Math.random() * 100 - 50}px`
+                            }}
+                            transition={{
+                                duration: 10 + Math.random() * 5,
+                                repeat: Infinity,
+                                delay: Math.random() * 10,
+                                ease: "linear"
+                            }}
+                        />
+                    ))}
+                </div>
+
+                <h1 className="relative z-10 text-3xl font-bold text-white text-center pt-6 font-pixel">
+                    Underwater Adventure Map
+                </h1>
+
+                {/* Path connections */}
+                <svg className="absolute top-0 left-0 w-full h-full pointer-events-none z-20">
                     {levels.map((level) =>
                         level.adjacency.map((adjIdx) => {
                             const neighbor = levels[adjIdx];
                             if (neighbor.id <= level.id) return null;
                             return (
-                                <line
+                                <motion.line
                                     key={`line-${level.id}-${neighbor.id}`}
                                     x1={level.x}
                                     y1={level.y}
@@ -182,9 +119,11 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
                                     y2={neighbor.y}
                                     stroke="#2dd4bf"
                                     strokeWidth="4"
-                                    strokeOpacity="0.6"
-                                    strokeDasharray="5 3"
-                                    strokeLinecap="round"
+                                    strokeOpacity="0.4"
+                                    strokeDasharray="8 4"
+                                    initial={{ pathLength: 0 }}
+                                    animate={{ pathLength: 1 }}
+                                    transition={{ duration: 2, ease: "easeInOut" }}
                                 />
                             );
                         })
@@ -193,62 +132,70 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
 
                 {/* Level nodes */}
                 {levels.map((lvl, i) => {
-                    let nodeClasses = "bg-teal-100";
-                    let label = "";
-
-                    if (lvl.locked) {
-                        nodeClasses = "bg-gray-300 opacity-60";
-                        label = "LOCKED";
-                    } else if (lvl.isCompleted) {
-                        nodeClasses = "bg-emerald-200";
-                        label = "DONE";
-                    }
-
-                    const isFocused = i === focusedIndex;
+                    const isActive = i === focusedIndex;
+                    const statusClass = lvl.locked
+                        ? "bg-gray-500/20 border-gray-400/20"
+                        : lvl.isCompleted
+                            ? "bg-emerald-500/20 border-emerald-400/20"
+                            : "bg-cyan-500/20 border-cyan-400/20";
 
                     return (
                         <motion.button
                             key={lvl.id}
-                            className={`
-                absolute flex flex-col items-center justify-center rounded-full
-                text-xs font-bold text-gray-800 border-4 border-white shadow-xl
-                ${nodeClasses}
-                ${isFocused ? "ring-4 ring-yellow-300 z-10" : ""}
-              `}
+                            className={`absolute flex flex-col items-center justify-center p-4 rounded-xl backdrop-blur-md border-2 transition-all duration-300
+                                ${statusClass}
+                                ${isActive ? "ring-4 ring-yellow-300/50 scale-110 z-30" : "z-20"}
+                                ${lvl.locked ? "cursor-not-allowed" : "hover:scale-105 cursor-pointer"}
+                            `}
                             style={{
-                                width: "80px",
-                                height: "80px",
+                                width: "120px",
+                                height: "120px",
                                 top: lvl.y,
                                 left: lvl.x,
                                 transform: "translate(-50%, -50%)",
-                                transformOrigin: "center center",
                             }}
-                            whileHover={{}} // no shift on hover
-                            whileTap={{}}
-                            onClick={() => handleNodeClick(i)}
+                            onClick={() => !lvl.locked && onSelectLevel(i)}
+                            onFocus={() => setFocusedIndex(i)}
+                            whileHover={!lvl.locked ? { scale: 1.1 } : {}}
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.5, delay: i * 0.1 }}
                         >
-                            <span className="text-sm text-sky-900 mb-1 font-semibold">
+                            <span className="text-2xl mb-2">
+                                {lvl.isCompleted ? "🏆" : lvl.locked ? "🔒" : "🎯"}
+                            </span>
+                            <span className="text-white font-medium text-sm mb-1">
                                 {lvl.name}
                             </span>
-                            <span className="text-xs text-gray-700">
-                                Diff: {lvl.difficulty}
+                            <span className="text-cyan-200/70 text-xs">
+                                Level {lvl.id}
                             </span>
-
-                            {label && (
-                                <span className="text-[9px] absolute bottom-[-14px] left-0 right-0 text-center text-gray-800">
-                                    {label}
-                                </span>
+                            {!lvl.locked && (
+                                <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2">
+                                    <motion.div
+                                        className="w-1 h-8 bg-cyan-400/20"
+                                        animate={{ height: [8, 12, 8] }}
+                                        transition={{ duration: 1.5, repeat: Infinity }}
+                                    />
+                                </div>
                             )}
                         </motion.button>
                     );
                 })}
             </div>
 
-            {/* New: Section to go back to Mode Select at the bottom */}
-            <div>
-                <Button onClick={onBackToModeSelect} variant="outline" className="mt-4">
-                    Back to Select Game Mode
+            <div className="flex gap-4">
+                <Button
+                    onClick={onBackToModeSelect}
+                    className="bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-100 backdrop-blur-sm border border-cyan-300/20"
+                >
+                    Back to Mode Select
                 </Button>
+            </div>
+
+            {/* Instructions */}
+            <div className="text-center text-cyan-200/70 text-sm">
+                Use arrow keys or WASD to navigate • Press Enter to select level
             </div>
         </div>
     );
