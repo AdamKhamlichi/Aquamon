@@ -21,7 +21,7 @@ export default {
     extend: {
       fontFamily: {
         pixel: ["Press Start 2P", "cursive"],
-        aqua: ["Aquawax", "sans-serif"],
+        aqua: ["Nautikka W00 Regular", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
