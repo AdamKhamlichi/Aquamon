@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // CoralGame.tsx
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
@@ -8,23 +9,22 @@ import swapSoundFile from "/sounds/swap.mp3";
 import matchSoundFile from "/sounds/match.mp3";
 import winSoundFile from "/sounds/success.mp3";
 
-// UI / icons
+// UI
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 
-// Our decoupled subcomponents
+// Our subcomponents
 import {
     ModeSelection,
     StatsBoard,
     TutorialModal,
     GameOverModal,
     GameBoard,
-    AdventureSelector,
-    LEVELS,         // <--- New import
+    AdventureMap,
     Level,
 } from "./GameComponent";
 
-// Constants & types
+// Constants
 import {
     GRID_SIZE,
     MIN_MATCH,
@@ -37,7 +37,7 @@ import {
 } from "./constant";
 
 const CoralGame: React.FC = () => {
-    // Game state
+    // Basic game state
     const [grid, setGrid] = useState<(string | null)[][]>([]);
     const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
     const [score, setScore] = useState(0);
@@ -48,64 +48,88 @@ const CoralGame: React.FC = () => {
     const [showTutorial, setShowTutorial] = useState(true);
     const [gameMode, setGameMode] = useState<GameMode | null>(null);
 
-    // Difficulty slider for Free Play
+    // Free Play difficulty
     const [freePlayDifficulty, setFreePlayDifficulty] = useState(5);
 
-    // --------------------------------------------
-    // ADVENTURE MODE STATE
-    // --------------------------------------------
-    // The array of levels from GameComponent, but stored in state so we can update `isCompleted`.
-    const [levels, setLevels] = useState<Level[]>(() => LEVELS.map(l => ({ ...l })));
+    // ADVENTURE levels array
+    // Notice each level has adjacency for index-based references.
+    const [levels, setLevels] = useState<Level[]>(() => [
+        {
+            id: 1,
+            name: "Coral Coast",
+            difficulty: 2,
+            moves: 15,
+            targetScore: 1000,
+            isCompleted: false,
+            locked: false,
+            x: 150,
+            y: 300,
+            adjacency: [1], // connects to levels[1] (index 1 in array)
+        },
+        {
+            id: 2,
+            name: "Deep Sea Canyon",
+            difficulty: 4,
+            moves: 20,
+            targetScore: 1500,
+            isCompleted: false,
+            locked: true,
+            x: 350,
+            y: 220,
+            adjacency: [0, 2], // connects back to levels[0], forward to levels[2]
+        },
+        {
+            id: 3,
+            name: "Sunken Ship Reef",
+            difficulty: 6,
+            moves: 25,
+            targetScore: 2000,
+            isCompleted: false,
+            locked: true,
+            x: 550,
+            y: 320,
+            adjacency: [1], // connects back to levels[1]
+        },
+    ]);
 
-    // The index of the current level the user is playing (or null if not selected yet)
+    // Which level index is currently being played (null => none selected)
     const [currentLevelIndex, setCurrentLevelIndex] = useState<number | null>(null);
 
-    // If we are in ADVENTURE mode and the user selected a level, we want to use that level’s moves & target
-    const currentLevel =
-        gameMode === GAME_MODES.ADVENTURE && currentLevelIndex !== null
-            ? levels[currentLevelIndex]
-            : null;
-
-    // Audio references
+    // Audio refs
     const swapAudio = useRef<HTMLAudioElement | null>(null);
     const matchAudio = useRef<HTMLAudioElement | null>(null);
     const winAudio = useRef<HTMLAudioElement | null>(null);
 
-    // For tracking which corals have been collected
+    // Collected corals
     const [collectedCorals, setCollectedCorals] = useState<Record<string, number>>({});
     const [totalCollected, setTotalCollected] = useState(0);
 
+    // Initialize audio
     useEffect(() => {
         swapAudio.current = new Audio(swapSoundFile);
         matchAudio.current = new Audio(matchSoundFile);
         winAudio.current = new Audio(winSoundFile);
 
-        // Optional: set volume levels
-        swapAudio.current.volume = 0.6;
-        matchAudio.current.volume = 0.65;
-        winAudio.current.volume = 0.7;
+        if (swapAudio.current) swapAudio.current.volume = 0.6;
+        if (matchAudio.current) matchAudio.current.volume = 0.65;
+        if (winAudio.current) winAudio.current.volume = 0.7;
     }, []);
 
+    // If user picks Challenge/Free, auto-init the game
     useEffect(() => {
-        if (gameMode) {
-            // If we just selected Challenge/Free, we initialize immediately
-            // For Adventure, we wait until user picks a level
-            if (gameMode !== GAME_MODES.ADVENTURE) {
-                initializeGame();
-            }
+        if (gameMode && gameMode !== GAME_MODES.ADVENTURE) {
+            initializeGame();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [gameMode]);
 
-    // If user picks a level in ADVENTURE => call this
+    // For ADVENTURE => user must pick a level from the map
     const handleSelectLevel = (index: number) => {
         setCurrentLevelIndex(index);
-        initializeGameWithLevel(levels[index]); // sets up grid/moves, etc.
+        initializeGameWithLevel(levels[index]);
     };
 
-    // For ADVENTURE Mode only
+    // Setup a single level in ADVENTURE
     const initializeGameWithLevel = (lvl: Level) => {
-        // For each new level, reset everything
         initializeGrid(lvl.difficulty);
         setScore(0);
         setMoves(lvl.moves);
@@ -116,13 +140,15 @@ const CoralGame: React.FC = () => {
         setShowTutorial(true);
     };
 
-    // For other modes (challenge/free)
+    // For CHALLENGE or FREE
     const initializeGame = () => {
-        // “Difficulty” here is for free play. Challenge is fixed.
-        // If we’re in free mode => the user picks from 1-10 => create bigger sets, etc.
+        if (gameMode === GAME_MODES.CHALLENGE) {
+            setMoves(INITIAL_MOVES);
+        } else if (gameMode === GAME_MODES.FREE) {
+            setMoves(Infinity);
+        }
         initializeGrid(freePlayDifficulty);
         setScore(0);
-        setMoves(gameMode === GAME_MODES.CHALLENGE ? INITIAL_MOVES : Infinity);
         setGameOver(false);
         setCombo(0);
         setCollectedCorals({});
@@ -130,19 +156,13 @@ const CoralGame: React.FC = () => {
         setShowTutorial(true);
     };
 
-    // Adjust the set of corals based on difficulty
-    const getCoralSet = (difficulty: number) => {
+    // Get a coral set based on difficulty
+    const getCoralSet = (difficultyValue: number) => {
         if (gameMode === GAME_MODES.CHALLENGE) {
-            return CORALS.regular; // Original 6 corals
-        }
-        else if (gameMode === GAME_MODES.ADVENTURE) {
-            // For demonstration, link the difficulty from the level to the “extended” set
-            const totalTypes = 6 + Math.floor((difficulty / 10) * CORALS.extended.length);
-            return [...CORALS.regular, ...CORALS.extended].slice(0, totalTypes);
-        }
-        else {
-            // Free Play
-            const totalTypes = 6 + Math.floor((difficulty / 10) * CORALS.extended.length);
+            return CORALS.regular;
+        } else {
+            // free or adventure => scale extended
+            const totalTypes = 6 + Math.floor((difficultyValue / 10) * CORALS.extended.length);
             return [...CORALS.regular, ...CORALS.extended].slice(0, totalTypes);
         }
     };
@@ -159,15 +179,20 @@ const CoralGame: React.FC = () => {
         setGrid(newGrid);
     };
 
-    const isAdjacent = (cell1: { row: number; col: number }, cell2: { row: number; col: number }) => {
-        const rowDiff = Math.abs(cell1.row - cell2.row);
-        const colDiff = Math.abs(cell1.col - cell2.col);
+    const isAdjacent = (c1: { row: number; col: number }, c2: { row: number; col: number }) => {
+        const rowDiff = Math.abs(c1.row - c2.row);
+        const colDiff = Math.abs(c1.col - c2.col);
         return (rowDiff === 1 && colDiff === 0) || (rowDiff === 0 && colDiff === 1);
     };
 
     const handleCellClick = (row: number, col: number) => {
         if (isAnimating || gameOver) return;
-        if ((gameMode === GAME_MODES.CHALLENGE || gameMode === GAME_MODES.ADVENTURE) && moves <= 0) return;
+        if (
+            (gameMode === GAME_MODES.CHALLENGE || gameMode === GAME_MODES.ADVENTURE) &&
+            moves <= 0
+        ) {
+            return;
+        }
 
         if (!selectedCell) {
             setSelectedCell({ row, col });
@@ -181,16 +206,13 @@ const CoralGame: React.FC = () => {
     };
 
     const generatePowerUp = (): string | null => {
-        // 10% chance for Challenge
-        // Or slightly variable for free/adventure
         let chance = 0.1;
         if (gameMode === GAME_MODES.FREE) {
             const penalty = (freePlayDifficulty - 1) * 0.007;
             chance = Math.max(0.1 - penalty, 0.01);
-        }
-        else if (gameMode === GAME_MODES.ADVENTURE && currentLevel) {
-            // For demonstration, do the same logic or some custom approach
-            const penalty = (currentLevel.difficulty - 1) * 0.007;
+        } else if (gameMode === GAME_MODES.ADVENTURE && currentLevelIndex !== null) {
+            const lvl = levels[currentLevelIndex];
+            const penalty = (lvl.difficulty - 1) * 0.007;
             chance = Math.max(0.1 - penalty, 0.01);
         }
 
@@ -208,7 +230,6 @@ const CoralGame: React.FC = () => {
         setIsAnimating(true);
         const newGrid = structuredClone(grid);
 
-        // Perform swap
         const temp = newGrid[cell1.row][cell1.col];
         newGrid[cell1.row][cell1.col] = newGrid[cell2.row][cell2.col];
         newGrid[cell2.row][cell2.col] = temp;
@@ -216,7 +237,6 @@ const CoralGame: React.FC = () => {
 
         const matched = await checkMatches(newGrid);
         if (!matched) {
-            // Swap back if no match
             setTimeout(() => {
                 newGrid[cell2.row][cell2.col] = newGrid[cell1.row][cell1.col];
                 newGrid[cell1.row][cell1.col] = temp;
@@ -224,7 +244,6 @@ const CoralGame: React.FC = () => {
                 setIsAnimating(false);
             }, 500);
         } else {
-            // If match found in challenge or adventure, decrement moves
             if (gameMode === GAME_MODES.CHALLENGE || gameMode === GAME_MODES.ADVENTURE) {
                 setMoves((m) => m - 1);
             }
@@ -234,7 +253,6 @@ const CoralGame: React.FC = () => {
     const updateCollection = (matchedCoralsArr: string[]) => {
         const updated = { ...collectedCorals };
         matchedCoralsArr.forEach((coral) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ([...CORALS.regular, ...CORALS.extended].includes(coral as any)) {
                 updated[coral] = (updated[coral] || 0) + 1;
                 setTotalCollected((prev) => prev + 1);
@@ -273,6 +291,7 @@ const CoralGame: React.FC = () => {
                 }
             }
         }
+
         // Vertical
         for (let row = 0; row < GRID_SIZE - 2; row++) {
             for (let col = 0; col < GRID_SIZE; col++) {
@@ -294,7 +313,7 @@ const CoralGame: React.FC = () => {
         if (hasMatches) {
             matchAudio.current?.play();
 
-            // Expand for bombs/lines, etc.
+            // Expand bombs/lines
             matchPositions.forEach((pos) => {
                 const [r, c] = pos.split(",").map(Number);
                 const piece = currentGrid[r][c];
@@ -324,15 +343,15 @@ const CoralGame: React.FC = () => {
                 }
             });
 
-            // Clear matched
+            // Clear them
             const newGrid = structuredClone(currentGrid);
             matchPositions.forEach((pos) => {
-                const [r, c] = pos.split(",");
+                const [r, c] = pos.split(",").map(Number);
                 newGrid[r][c] = null;
             });
 
             updateCollection(matchedCoralsArr);
-            // If challenge or adventure => add points
+
             if (gameMode === GAME_MODES.CHALLENGE || gameMode === GAME_MODES.ADVENTURE) {
                 const points = matchPositions.size * POINTS_PER_MATCH;
                 setScore((s) => s + points);
@@ -345,12 +364,15 @@ const CoralGame: React.FC = () => {
             await new Promise((resolve) => setTimeout(resolve, 350));
             await fillEmptyCells(newGrid);
 
-            // ADVENTURE Mode => check if we reached currentLevel.targetScore
-            if (gameMode === GAME_MODES.ADVENTURE && currentLevel && score >= currentLevel.targetScore) {
-                setGameOver(true);
-                triggerWinEffects(); // confetti + sound
+            // If adventure => check level target
+            if (gameMode === GAME_MODES.ADVENTURE && currentLevelIndex !== null) {
+                const lvl = levels[currentLevelIndex];
+                if (score >= lvl.targetScore) {
+                    setGameOver(true);
+                    triggerWinEffects();
+                }
             }
-            // Challenge => check if we reached WINNING_SCORE
+            // If challenge => check 2000
             else if (gameMode === GAME_MODES.CHALLENGE && score >= WINNING_SCORE) {
                 setGameOver(true);
                 triggerWinEffects();
@@ -367,10 +389,10 @@ const CoralGame: React.FC = () => {
         const newGrid = structuredClone(currentGrid);
         let hasEmpty = false;
 
-        const difficultyValue =
-            gameMode === GAME_MODES.ADVENTURE && currentLevel
-                ? currentLevel.difficulty
-                : freePlayDifficulty;
+        let difficultyValue = freePlayDifficulty;
+        if (gameMode === GAME_MODES.ADVENTURE && currentLevelIndex !== null) {
+            difficultyValue = levels[currentLevelIndex].difficulty;
+        }
 
         for (let col = 0; col < GRID_SIZE; col++) {
             let writeRow = GRID_SIZE - 1;
@@ -384,11 +406,12 @@ const CoralGame: React.FC = () => {
                     writeRow--;
                 }
             }
-            // fill with new pieces
+            // fill empty
             const coralSet = getCoralSet(difficultyValue);
             for (let row = writeRow; row >= 0; row--) {
                 const powerUp = generatePowerUp();
-                newGrid[row][col] = powerUp ?? coralSet[Math.floor(Math.random() * coralSet.length)];
+                newGrid[row][col] =
+                    powerUp ?? coralSet[Math.floor(Math.random() * coralSet.length)];
                 hasEmpty = true;
             }
         }
@@ -424,58 +447,34 @@ const CoralGame: React.FC = () => {
 
     const handleModeSelect = (mode: GameMode) => {
         setGameMode(mode);
-        setCurrentLevelIndex(null); // reset adventure state
+        setCurrentLevelIndex(null);
     };
 
-    // Mark the current level as completed, update state
     const completeCurrentLevel = () => {
         if (currentLevelIndex !== null) {
-            setLevels(prevLevels => {
-                const updated = [...prevLevels];
-                updated[currentLevelIndex] = {
-                    ...updated[currentLevelIndex],
-                    isCompleted: true,
-                };
+            setLevels((prev) => {
+                const updated = [...prev];
+                updated[currentLevelIndex].isCompleted = true;
+                // unlock next
+                if (currentLevelIndex + 1 < updated.length) {
+                    updated[currentLevelIndex + 1].locked = false;
+                }
                 return updated;
             });
         }
     };
 
-    // If user hits "Next Level" in the game over screen
-    const handleNextLevel = () => {
-        if (currentLevelIndex === null) return;
-        const nextIndex = currentLevelIndex + 1;
-        if (nextIndex < levels.length) {
-            // proceed to next level
-            setCurrentLevelIndex(nextIndex);
-            initializeGameWithLevel(levels[nextIndex]);
-        } else {
-            // No more levels => done.
-            toast.success("Congratulations! You've finished all levels!");
-            // Return to level select screen, or do something else
-            setCurrentLevelIndex(null);
-            setGameOver(false);
+    const didWinAdventureLevel = (() => {
+        if (
+            gameMode === GAME_MODES.ADVENTURE &&
+            currentLevelIndex !== null &&
+            levels[currentLevelIndex]
+        ) {
+            return score >= levels[currentLevelIndex].targetScore;
         }
-    };
+        return false;
+    })();
 
-    // Determine if we "won" the level in ADVENTURE
-    const didWinAdventureLevel =
-        gameMode === GAME_MODES.ADVENTURE &&
-        currentLevel &&
-        score >= currentLevel.targetScore;
-
-    // If user restarts the same level
-    const handleReplayLevel = () => {
-        if (gameMode === GAME_MODES.ADVENTURE && currentLevel) {
-            initializeGameWithLevel(currentLevel);
-        } else {
-            // fallback for other modes
-            initializeGame();
-        }
-    };
-
-    // If the game is over in ADVENTURE and we have indeed "won",
-    // mark the level as completed
     useEffect(() => {
         if (didWinAdventureLevel && gameOver && currentLevelIndex !== null) {
             completeCurrentLevel();
@@ -483,9 +482,27 @@ const CoralGame: React.FC = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [didWinAdventureLevel, gameOver]);
 
-    // -----------------------------------
-    // Render
-    // -----------------------------------
+    const handleReplayLevel = () => {
+        if (gameMode === GAME_MODES.ADVENTURE && currentLevelIndex !== null) {
+            initializeGameWithLevel(levels[currentLevelIndex]);
+        } else {
+            initializeGame();
+        }
+    };
+
+    const handleNextLevel = () => {
+        if (currentLevelIndex === null) return;
+        const nextIndex = currentLevelIndex + 1;
+        if (nextIndex < levels.length) {
+            setCurrentLevelIndex(nextIndex);
+            initializeGameWithLevel(levels[nextIndex]);
+        } else {
+            toast.success("Congratulations! You've finished all levels!");
+            setCurrentLevelIndex(null);
+            setGameOver(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-sky-100 to-white pb-20 md:pb-0 md:pt-20 relative overflow-hidden">
             <Navigation />
@@ -497,13 +514,11 @@ const CoralGame: React.FC = () => {
                         setFreePlayDifficulty={setFreePlayDifficulty}
                     />
                 ) : gameMode === GAME_MODES.ADVENTURE && currentLevelIndex === null ? (
-                    // Show Adventure Selector if user is in ADVENTURE but hasn't chosen a level
-                    <AdventureSelector
+                    <AdventureMap
                         levels={levels}
                         onSelectLevel={handleSelectLevel}
                     />
                 ) : (
-                    // Normal game screen (Challenge/Free OR Adventure if level selected)
                     <div>
                         <StatsBoard
                             gameMode={gameMode}
@@ -512,9 +527,16 @@ const CoralGame: React.FC = () => {
                             totalCollected={totalCollected}
                             collectedCorals={collectedCorals}
                             freePlayDifficulty={freePlayDifficulty}
-                            // If we're in adventure => show level name & target
-                            currentLevelName={currentLevel?.name}
-                            currentTargetScore={currentLevel?.targetScore}
+                            currentLevelName={
+                                gameMode === GAME_MODES.ADVENTURE && currentLevelIndex !== null
+                                    ? levels[currentLevelIndex].name
+                                    : undefined
+                            }
+                            currentTargetScore={
+                                gameMode === GAME_MODES.ADVENTURE && currentLevelIndex !== null
+                                    ? levels[currentLevelIndex].targetScore
+                                    : undefined
+                            }
                         />
 
                         <GameBoard
@@ -555,7 +577,6 @@ const CoralGame: React.FC = () => {
                             collectedCorals={collectedCorals}
                             onPlayAgain={handleReplayLevel}
                             onChangeMode={() => setGameMode(null)}
-                            // Adventure-specific props
                             isAdventure={gameMode === GAME_MODES.ADVENTURE}
                             didWinAdventureLevel={didWinAdventureLevel}
                             onNextLevel={handleNextLevel}
