@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // GameComponents.tsx
 
 import React, { useEffect, useRef, useState } from "react";
@@ -11,6 +10,7 @@ import {
     WINNING_SCORE,
     INITIAL_MOVES,
     CORALS,
+    powerUpDescriptions,
 } from "./constant";
 
 /* -------------------------------------------------------------------------- */
@@ -18,15 +18,15 @@ import {
 /* -------------------------------------------------------------------------- */
 export interface Level {
     id: number;
-    name: string;         // e.g. "Coral Coast"
-    difficulty: number;   // 1-10
+    name: string;
+    difficulty: number;
     moves: number;
     targetScore: number;
     isCompleted: boolean;
     locked?: boolean;
-    x: number;            // map x
-    y: number;            // map y
-    adjacency: number[];  // connected level indices
+    x: number;
+    y: number;
+    adjacency: number[];
 }
 
 /* -------------------------------------------------------------------------- */
@@ -35,25 +35,33 @@ export interface Level {
 interface AdventureMapProps {
     levels: Level[];
     onSelectLevel: (index: number) => void;
+    onBackToModeSelect: () => void; // NEW: for the "Back to Mode Select" button
 }
 
 export const AdventureMap: React.FC<AdventureMapProps> = ({
     levels,
     onSelectLevel,
+    onBackToModeSelect,
 }) => {
+    // Sound refs: hover, select, move
     const hoverSoundRef = useRef<HTMLAudioElement | null>(null);
     const selectSoundRef = useRef<HTMLAudioElement | null>(null);
+    const moveSoundRef = useRef<HTMLAudioElement | null>(null);
 
-    // Which node is focused for keyboard nav
+    // Currently focused node (keyboard)
     const [focusedIndex, setFocusedIndex] = useState<number | null>(() => {
         const firstUnlocked = levels.findIndex((l) => !l.locked);
         return firstUnlocked >= 0 ? firstUnlocked : null;
     });
 
     useEffect(() => {
+        // Assign correct files to each ref
         hoverSoundRef.current = new Audio("/sounds/mapHover.mp3");
+        moveSoundRef.current = new Audio("/sounds/mapMove.mp3");
         selectSoundRef.current = new Audio("/sounds/mapSelect.mp3");
+
         if (hoverSoundRef.current) hoverSoundRef.current.volume = 0.4;
+        if (moveSoundRef.current) moveSoundRef.current.volume = 0.4;
         if (selectSoundRef.current) selectSoundRef.current.volume = 0.5;
     }, []);
 
@@ -73,6 +81,7 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
             } else if (["enter", "space"].includes(code)) {
                 const lvl = levels[focusedIndex];
                 if (!lvl.locked) {
+                    // SELECT sound
                     selectSoundRef.current?.play().catch(() => { });
                     onSelectLevel(focusedIndex);
                 }
@@ -102,6 +111,7 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
             const vx = nbr.x - current.x;
             const vy = nbr.y - current.y;
 
+            // only consider neighbors strictly in that direction
             if (direction === "up" && vy >= 0) return;
             if (direction === "down" && vy <= 0) return;
             if (direction === "left" && vx >= 0) return;
@@ -116,8 +126,9 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
 
         if (bestIndex !== null) {
             const idx = levels.findIndex((l) => l.id === bestIndex);
-            if (idx !== -1) {
-                hoverSoundRef.current?.play().catch(() => { });
+            if (idx !== -1 && idx !== focusedIndex) {
+                // PLAY move SFX if actual movement
+                moveSoundRef.current?.play().catch(() => { });
                 setFocusedIndex(idx);
             }
         }
@@ -127,28 +138,26 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
         setFocusedIndex(index);
         const lvl = levels[index];
         if (!lvl.locked) {
+            // SELECT sound
             selectSoundRef.current?.play().catch(() => { });
             onSelectLevel(index);
         }
     };
 
     return (
-        <div className="flex items-center justify-center">
-            {/*
-        The container is narrower & shorter => no scrolling.
-        We'll center it with "mx-auto" and "my-auto".
-      */}
+        <div className="flex flex-col items-center justify-center gap-4">
             <div
                 className="relative"
                 style={{
                     width: "700px",
                     height: "500px",
                     background:
-                        "radial-gradient(circle at 50% 30%, rgba(28,174,255,0.3) 0%, rgba(0,176,255,0.1) 80%, transparent 100%)",
-                    backgroundColor: "#b3ecff",
-                    border: "4px solid #99ddff",
+                        "radial-gradient(circle at 50% 30%, rgba(28,174,255,0.4) 0%, rgba(0,176,255,0.2) 70%, transparent 100%)",
+                    backgroundColor: "#94e0ff",
+                    border: "4px solid #6fd3f9",
                     borderRadius: "20px",
                     position: "relative",
+                    boxShadow: "0 0 12px rgba(0, 164, 255, 0.3)",
                 }}
             >
                 <h1 className="text-3xl font-bold text-sky-900 font-pixel animate-float text-center pt-2">
@@ -158,12 +167,11 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
                     Use <strong>W/A/S/D</strong> or <strong>Arrows</strong>, Enter to Select
                 </p>
 
-                {/* Lines */}
+                {/* Lines connecting adjacency */}
                 <svg className="absolute top-0 left-0 w-full h-full pointer-events-none">
-                    {levels.map((level) => {
-                        return level.adjacency.map((adjIdx) => {
+                    {levels.map((level) =>
+                        level.adjacency.map((adjIdx) => {
                             const neighbor = levels[adjIdx];
-                            // draw line if neighbor.id>level.id
                             if (neighbor.id <= level.id) return null;
                             return (
                                 <line
@@ -172,27 +180,27 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
                                     y1={level.y}
                                     x2={neighbor.x}
                                     y2={neighbor.y}
-                                    stroke="#0ea5e9"
+                                    stroke="#2dd4bf"
                                     strokeWidth="4"
-                                    strokeOpacity="0.5"
+                                    strokeOpacity="0.6"
                                     strokeDasharray="5 3"
                                     strokeLinecap="round"
                                 />
                             );
-                        });
-                    })}
+                        })
+                    )}
                 </svg>
 
                 {/* Level nodes */}
                 {levels.map((lvl, i) => {
-                    let nodeClasses = "bg-blue-200";
+                    let nodeClasses = "bg-teal-100";
                     let label = "";
 
                     if (lvl.locked) {
-                        nodeClasses = "bg-gray-400 opacity-60";
+                        nodeClasses = "bg-gray-300 opacity-60";
                         label = "LOCKED";
                     } else if (lvl.isCompleted) {
-                        nodeClasses = "bg-green-300";
+                        nodeClasses = "bg-emerald-200";
                         label = "DONE";
                     }
 
@@ -204,7 +212,6 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
                             className={`
                 absolute flex flex-col items-center justify-center rounded-full
                 text-xs font-bold text-gray-800 border-4 border-white shadow-xl
-                hover:cursor-pointer
                 ${nodeClasses}
                 ${isFocused ? "ring-4 ring-yellow-300 z-10" : ""}
               `}
@@ -216,17 +223,17 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
                                 transform: "translate(-50%, -50%)",
                                 transformOrigin: "center center",
                             }}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
+                            whileHover={{}} // no shift on hover
+                            whileTap={{}}
                             onClick={() => handleNodeClick(i)}
                         >
-                            {/* Show name & difficulty inside */}
-                            <span className="text-sm text-sky-800 mb-1 font-semibold">
+                            <span className="text-sm text-sky-900 mb-1 font-semibold">
                                 {lvl.name}
                             </span>
                             <span className="text-xs text-gray-700">
                                 Diff: {lvl.difficulty}
                             </span>
+
                             {label && (
                                 <span className="text-[9px] absolute bottom-[-14px] left-0 right-0 text-center text-gray-800">
                                     {label}
@@ -236,17 +243,20 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
                     );
                 })}
             </div>
+
+            {/* New: Section to go back to Mode Select at the bottom */}
+            <div>
+                <Button onClick={onBackToModeSelect} variant="outline" className="mt-4">
+                    Back to Select Game Mode
+                </Button>
+            </div>
         </div>
     );
 };
 
 /* -------------------------------------------------------------------------- */
-/* ModeSelection, StatsBoard, TutorialModal, GameOverModal, GameBoard remain the same,
-   or with minimal changes.
-   The rest of the code below is unchanged except for naming.
-*/
+/*                               MODE SELECTION                               */
 /* -------------------------------------------------------------------------- */
-
 interface ModeSelectionProps {
     onModeSelect: (mode: GameMode) => void;
     freePlayDifficulty: number;
@@ -277,7 +287,7 @@ export const ModeSelection: React.FC<ModeSelectionProps> = ({
                 >
                     <h2 className="text-2xl font-bold mb-2 text-sky-700">Adventure Mode</h2>
                     <p className="text-gray-600 mb-4">
-                        Explore a simpler undersea map with multiple levels!
+                        Explore a multi-level undersea map with increasing difficulty
                     </p>
                     <Button
                         onClick={() => onModeSelect(GAME_MODES.ADVENTURE)}
@@ -316,7 +326,7 @@ export const ModeSelection: React.FC<ModeSelectionProps> = ({
                         <h2 className="text-2xl font-bold text-blue-700">Free Play Mode</h2>
                     </div>
                     <p className="text-gray-600 mb-4">
-                        Dive in and collect as many sea creatures as possible! Adjust difficulty:
+                        Dive in and collect as many sea creatures as you can!
                     </p>
                     <div className="flex items-center gap-2 mb-4 justify-center">
                         <span className="text-sm font-semibold text-blue-500">Easy</span>
@@ -343,6 +353,9 @@ export const ModeSelection: React.FC<ModeSelectionProps> = ({
     );
 };
 
+/* -------------------------------------------------------------------------- */
+/*                                 STATS BOARD                                */
+/* -------------------------------------------------------------------------- */
 interface StatsBoardProps {
     gameMode: GameMode;
     score: number;
@@ -442,6 +455,9 @@ export const StatsBoard: React.FC<StatsBoardProps> = ({
     );
 };
 
+/* -------------------------------------------------------------------------- */
+/*                               TUTORIAL MODAL                               */
+/* -------------------------------------------------------------------------- */
 interface TutorialModalProps {
     showTutorial: boolean;
     onClose: () => void;
@@ -478,18 +494,37 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({
                             </div>
                             <div className="space-y-2">
                                 <h4 className="font-semibold">Power-ups</h4>
+
                                 <div className="grid grid-cols-2 gap-2">
-                                    {Object.entries(CORALS.special).map(([key, coral]) => (
-                                        <div
-                                            key={key}
-                                            className="flex items-center gap-2 bg-blue-50 p-2 rounded-lg"
-                                        >
-                                            <span className="text-2xl">{coral as any}</span>
-                                            <span className="text-sm text-gray-600">
-                                                {key.charAt(0).toUpperCase() + key.slice(1).toLowerCase()}
-                                            </span>
-                                        </div>
-                                    ))}
+                                    {Object.entries(CORALS.special).map(([key, coral]) => {
+                                        // e.g. key = "RAINBOW", coral = "🌈"
+                                        const description = powerUpDescriptions[key] ?? "A mysterious power!";
+
+                                        return (
+                                            <div
+                                                key={key}
+                                                className="relative flex items-center gap-2 bg-blue-50 p-2 rounded-lg
+                     group hover:cursor-help"
+                                            >
+                                                <span className="text-2xl">{coral}</span>
+                                                <span className="text-sm text-gray-600">
+                                                    {/* Convert "RAINBOW" => "Rainbow" text */}
+                                                    {key.charAt(0).toUpperCase() + key.slice(1).toLowerCase()}
+                                                </span>
+
+                                                {/* The tooltip on hover */}
+                                                <div
+                                                    className="absolute bottom-full left-1/2 transform -translate-x-1/2
+                       bg-white text-gray-800 text-xs rounded-md px-2 py-1
+                       opacity-0 group-hover:opacity-100 pointer-events-none
+                       transition delay-75 shadow-md"
+                                                    style={{ marginBottom: "0.5rem" }}
+                                                >
+                                                    {description}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                             {gameMode === GAME_MODES.CHALLENGE && (
@@ -504,10 +539,9 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({
                                 <div className="space-y-2">
                                     <h4 className="font-semibold">Goal</h4>
                                     <p className="text-gray-600">
-                                        Complete each level by reaching its target score within the allotted moves!
-                                        <br />
-                                        Use <strong>W/A/S/D</strong> or <strong>Arrows</strong> to move between nodes,
-                                        <strong> Enter</strong> to pick a level.
+                                        Complete each level by reaching its target score!<br />
+                                        Use <strong>W/A/S/D</strong> or <strong>Arrows</strong> to move,
+                                        <strong> Enter</strong> to select a level.
                                     </p>
                                 </div>
                             )}
@@ -522,6 +556,9 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({
     );
 };
 
+/* -------------------------------------------------------------------------- */
+/*                               GAME OVER MODAL                              */
+/* -------------------------------------------------------------------------- */
 interface GameOverModalProps {
     show: boolean;
     score: number;
@@ -532,6 +569,7 @@ interface GameOverModalProps {
     isAdventure?: boolean;
     onNextLevel?: () => void;
     didWinAdventureLevel?: boolean;
+    onViewMap?: () => void; // new button to go back to map
 }
 
 export const GameOverModal: React.FC<GameOverModalProps> = ({
@@ -544,6 +582,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
     isAdventure,
     onNextLevel,
     didWinAdventureLevel,
+    onViewMap,
 }) => {
     return (
         <AnimatePresence>
@@ -583,6 +622,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
                                 <Button onClick={onPlayAgain} className="w-full">
                                     {didWinAdventureLevel ? "Replay Level" : "Play Again"}
                                 </Button>
+                                {/* Next level if we won in adventure */}
                                 {isAdventure && didWinAdventureLevel && onNextLevel && (
                                     <Button
                                         onClick={onNextLevel}
@@ -590,6 +630,19 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
                                         className="w-full"
                                     >
                                         Next Level
+                                    </Button>
+                                )}
+                                {/*
+                  If in adventure mode => "View Map"
+                  This will let you go back to the map after finishing or losing the level
+                */}
+                                {isAdventure && onViewMap && (
+                                    <Button
+                                        onClick={onViewMap}
+                                        variant="outline"
+                                        className="w-full"
+                                    >
+                                        View Map
                                     </Button>
                                 )}
                                 <Button onClick={onChangeMode} variant="outline" className="w-full">
@@ -604,10 +657,9 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
     );
 };
 
-/*
-  Finally, the GameBoard is unchanged, except we remove 'layout' on the motion.button
-  if we want absolutely no shifting. But we'll keep it for the puzzle effect.
-*/
+/* -------------------------------------------------------------------------- */
+/*                                GAME BOARD                                  */
+/* -------------------------------------------------------------------------- */
 
 interface GameBoardProps {
     grid: (string | null)[][];
@@ -615,6 +667,7 @@ interface GameBoardProps {
     isAnimating: boolean;
     gameOver: boolean;
     onCellClick: (row: number, col: number) => void;
+    matchedPositions?: Set<string> | null;  // highlight
 }
 
 export const GameBoard: React.FC<GameBoardProps> = ({
@@ -623,6 +676,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     isAnimating,
     gameOver,
     onCellClick,
+    matchedPositions,
 }) => {
     return (
         <motion.div
@@ -637,18 +691,22 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                         {row.map((cell, colIndex) => {
                             const isSelected =
                                 selectedCell?.row === rowIndex && selectedCell?.col === colIndex;
+                            const posKey = `${rowIndex},${colIndex}`;
+                            const isMatched = matchedPositions?.has(posKey);
 
                             return (
                                 <motion.button
-                                    key={`${rowIndex}-${colIndex}`}
+                                    key={posKey}
                                     onClick={() => onCellClick(rowIndex, colIndex)}
                                     disabled={isAnimating || gameOver}
                                     className={`
                     w-14 h-14 flex items-center justify-center rounded-xl text-2xl
                     transition-all duration-300
-                    ${isSelected
-                                            ? "bg-blue-300/20 scale-110"
-                                            : "bg-blue-300/5 hover:bg-blue-300/10"
+                    ${isMatched
+                                            ? "bg-yellow-200 animate-pulse ring-2 ring-red-400"
+                                            : isSelected
+                                                ? "bg-blue-300/20 scale-110"
+                                                : "bg-blue-300/5 hover:bg-blue-300/10"
                                         }
                   `}
                                     whileHover={{ scale: 1.15, rotate: 10 }}

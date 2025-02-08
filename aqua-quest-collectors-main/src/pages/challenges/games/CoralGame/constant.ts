@@ -12,6 +12,13 @@ export const GAME_MODES = {
   ADVENTURE: "adventure",
 } as const;
 
+export const powerUpDescriptions: Record<string, string> = {
+  RAINBOW: "Acts as a wildcard and can match with any coral.",
+  BOMB: "Clears a 3x3 area around its position.",
+  LINE: "Clears the entire row and column.",
+  STAR: "A special star that might do something extra fancy.",
+};
+
 export type GameMode = (typeof GAME_MODES)[keyof typeof GAME_MODES];
 
 export const CORALS = {
