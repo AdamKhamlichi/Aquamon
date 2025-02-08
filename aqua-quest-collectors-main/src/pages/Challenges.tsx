@@ -7,7 +7,7 @@ import Navigation from "@/components/Navigation";
 
 // Lazy load the CoralGame component
 const CoralGame = React.lazy(() => import('./challenges/games/CoralGame'));
-
+const PacManGame = React.lazy(() => import('./challenges/games/pacman'));
 export const ChallengeWrapper = () => {
   const { challengeId } = useParams();
   const navigate = useNavigate();
@@ -18,6 +18,14 @@ export const ChallengeWrapper = () => {
       title: "Coral Restoration",
       description: "Help rebuild pixel coral reefs",
       component: CoralGame,
+      difficulty: "Hard",
+      reward: "Legendary Pixel Shark"
+    },
+
+    'pacman': {
+      title: "vccvsdvsdsd",
+      description: "fk,aakscdc",
+      component: PacManGame,
       difficulty: "Hard",
       reward: "Legendary Pixel Shark"
     }
@@ -63,6 +71,14 @@ export const ChallengesList = () => {
       description: "Help rebuild pixel coral reefs",
       reward: "Legendary Pixel Shark",
       difficulty: "Hard",
+    },
+    {
+        id: 'pacman',
+        title: "vccvsdvsdsd",
+        description: "fk,aakscdc",
+        component: PacManGame,
+        difficulty: "Hard",
+        reward: "Legendary Pixel Shark"
     }
   ];
 

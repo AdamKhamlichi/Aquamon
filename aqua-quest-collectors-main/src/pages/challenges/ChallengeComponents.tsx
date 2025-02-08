@@ -7,6 +7,7 @@ import Navigation from "@/components/Navigation";
 
 // Import games
 const CoralGame = React.lazy(() => import('./games/CoralGame'));
+const pacmanGame = React.lazy(() => import('./games/pacman'))
 
 const ChallengeWrapper = () => {
     const { challengeId } = useParams();
@@ -19,6 +20,13 @@ const ChallengeWrapper = () => {
             component: CoralGame,
             difficulty: "Hard",
             reward: "Legendary Pixel Shark"
+        }, 
+        'pacman':         {
+            title: "Coral Restoration",
+            component: pacmanGame,
+            description: "Help rebuild pixel coral reefs",
+            reward: "Legendary Pixel Shark",
+            difficulty: "Hard",
         }
     };
 
@@ -58,6 +66,13 @@ const ChallengesList = () => {
     const challenges = [
         {
             id: 'coral-restoration',
+            title: "Coral Restoration",
+            description: "Help rebuild pixel coral reefs",
+            reward: "Legendary Pixel Shark",
+            difficulty: "Hard",
+        },
+        {
+            id: 'pacman',
             title: "Coral Restoration",
             description: "Help rebuild pixel coral reefs",
             reward: "Legendary Pixel Shark",
