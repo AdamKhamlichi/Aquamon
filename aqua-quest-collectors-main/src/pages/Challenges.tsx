@@ -23,8 +23,8 @@ export const ChallengeWrapper = () => {
     },
 
     'pacman': {
-      title: "vccvsdvsdsd",
-      description: "fk,aakscdc",
+      title: "Ocean restauration",
+      description: "Help cleaning the sea",
       component: PacManGame,
       difficulty: "Hard",
       reward: "Legendary Pixel Shark"
