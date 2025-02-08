@@ -9,12 +9,11 @@ export const INITIAL_MOVES = 20;
 export const GAME_MODES = {
   CHALLENGE: "challenge",
   FREE: "free",
+  ADVENTURE: "adventure", // <--- new
 } as const;
 
-// Type for game mode (either "challenge" or "free")
 export type GameMode = (typeof GAME_MODES)[keyof typeof GAME_MODES];
 
-// constants.ts
 export const CORALS = {
   regular: ["🪸", "🐠", "🐡", "🐙", "🦀", "🦐"],
   extended: ["🐟", "🐋", "🐳", "🐬", "🦑", "🐢"],
