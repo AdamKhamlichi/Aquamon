@@ -16,7 +16,8 @@ const Navigation = () => {
     { to: "/chat", icon: MessageCircle, label: "Chat" },
     { to: "/pokedex", icon: List, label: "Aquarium" },
     { to: "/challenges", icon: Award, label: "Challenges" },
-    { to: "/settings", icon: Settings, label: "Settings" }
+    { to: "/settings", icon: Settings, label: "Settings" },
+    { to: "/about", icon: Settings, label: "About" }
   ];
 
   const handleLogout = async () => {
