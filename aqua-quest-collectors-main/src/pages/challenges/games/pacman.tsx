@@ -50,11 +50,10 @@ const generateMaze = (gridSize = 20) => {
 function countOccurrences(nestedArray, target) {
     let count = 0;
     
-    // Iterate over each sub-array
     for (let i = 0; i < nestedArray.length; i++) {
-      // Iterate over each element in the sub-array
+
       for (let j = 0; j < nestedArray[i].length; j++) {
-        // Increment count if the current element matches the target
+
         if (nestedArray[i][j] === target) {
           count++;
         }
@@ -83,25 +82,18 @@ const Pacman = () => {
 
 
   useEffect(() => {
-    // This effect will be triggered when `grid` state is updated
+
     if (grid.length > 0) {
       setTotal(countOccurrences(grid, 1));
     }
   }, [grid]);
 
- /* const handleSecondsChange = useCallback((newSeconds) => {
-    // Avoid updating state directly during render phase
-    moveBoats();
-    console.log(`Parent received seconds: ${newSeconds}`);
-  }, [bots, grid]);*/
-
   useEffect(() => {
-    // Set interval to move the boats every second (1000 milliseconds)
+ 
     const intervalId = setInterval(() => {
       moveBoats();
     }, 1000);
   
-    // Cleanup function to clear the interval when the component unmounts or when dependencies change
     return () => clearInterval(intervalId);
   }, [bots, grid]);
 
@@ -115,6 +107,7 @@ const Pacman = () => {
 
   const handleSecondsChange = useCallback((newSeconds) => {
     setSeconds(newSeconds);
+
     if(points + lost === total)
     {
         navWinningPage;
@@ -124,66 +117,53 @@ const Pacman = () => {
   const moveBoats = () => {
     const newGrid = [...grid];
     const newBots = [...bots];
-    console.log("boa");
+
     bots.forEach((pos, index) => {
       updatePos(pos, index, newGrid, newBots);
     });
 
-    console.log("af");
-
-    bots.forEach(a => console.log(a));
     setGrid(newGrid);
     setBots(newBots);
   };
 
   const validateMovements = (grid, pos, tile, movement) => {
-    // Create a new tempPos to avoid mutation of the original pos
-    let tempPos = [...pos]; // Clone the array to avoid side effects
+
+    let tempPos = [...pos];
     tempPos[tile] = tempPos[tile] + movement;
   
-    // Check if the new position is within bounds
     if (tempPos[0] < 0 || tempPos[0] >= grid.length) return false;
     if (tempPos[1] < 0 || tempPos[1] >= grid[0].length) return false;
   
-    // Check if the tile is blocked (e.g., 0 is a blocked tile)
     if (grid[tempPos[0]][tempPos[1]] === 0) return false;
   
-    // The position is valid
     return true;
   };
   
   const updatePos = (pos, index, newGrid, newBots) => {
-    let tile = Math.floor(Math.random() * 2); // 0 is for x, 1 is for y
+    let tile = Math.floor(Math.random() * 2);
     
-    // Ensure movement is either -1 or 1 (not 0)
-    let movement = (Math.random() < 0.5) ? -1 : 1; // Randomly set movement to -1 or 1
+    let movement = (Math.random() < 0.5) ? -1 : 1;
     
     let moveSuccess = false;
-    let newPos = [...pos]; // Clone the original position
+    let newPos = [...pos];
   
-    // Try moving until a valid position is found
     while (!moveSuccess) {
-      // Ensure the chosen tile and movement don't cause the bot to move to a blocked space
       if (validateMovements(newGrid, newPos, tile, movement)) {
-        // Update position if valid
+     
         newPos[tile] = newPos[tile] + movement;
         moveSuccess = true;
       } else {
-        // Randomly change direction if current movement is invalid
-        tile = Math.floor(Math.random() * 2); // Re-choose the axis to move (x or y)
-        movement = (Math.random() < 0.5) ? -1 : 1; // Re-choose direction (1 or -1)
+       
+        tile = Math.floor(Math.random() * 2);
+        movement = (Math.random() < 0.5) ? -1 : 1;
       }
     }
-  
-    // Log for debugging
-   // console.log("Moving bot to:", newPos);
-  
-    // Update the grid and bot position
+
     if(newGrid[newPos[0]][newPos[1]] === 1) setLost(lost + 1);
     if(newGrid[newPos[0]][newPos[1]] === 2) navLosingPage();
-    newGrid[pos[0]][pos[1]] = 3; // Mark the old position as path (3)
-    newGrid[newPos[0]][newPos[1]] = 4; // Mark the new position as bot (4)
-    newBots[index] = [newPos[0], newPos[1]]; // Update bot position in the bot list
+    newGrid[pos[0]][pos[1]] = 3;
+    newGrid[newPos[0]][newPos[1]] = 4;
+    newBots[index] = [newPos[0], newPos[1]];
   };
   
 
@@ -237,10 +217,8 @@ const Pacman = () => {
   return (
     <div className="flex justify-center items-center min-h-screen">
       <div className="flex flex-col items-center">
-        {/* Ocean Cleanup Title */}
         <h1 className="text-4xl font-bold mb-6">Ocean Cleanup</h1>
   
-        {/* Maze Grid */}
         <div className="flex flex-wrap w-[500px]">
           {grid.map((row, rowIndex) =>
             row.map((cell, colIndex) => (
