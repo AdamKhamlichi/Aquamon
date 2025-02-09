@@ -11,6 +11,7 @@ import { Star, Timer, Trophy, Users } from 'lucide-react';
 // Lazy load the CoralGame component
 const CoralGame = React.lazy(() => import('./challenges/games/CoralGame/CoralGame'));
 const TurtleGame = React.lazy(() => import('./challenges/games/TurtleGame/TurtleGame'));
+const PlasticGame = React.lazy(() => import('./challenges/games/PlasticHunter/PlasticHunter.tsx'));
 
 export const ChallengeWrapper = () => {
   const { challengeId } = useParams();
@@ -24,6 +25,11 @@ export const ChallengeWrapper = () => {
       component: CoralGame,
       difficulty: "Hard",
       reward: "Legendary Pixel Shark"
+    }, 'plastic-cleanup': {
+      title: "Plastic Cleanup",
+      description: "Help clean up the plastic from the ocean",
+      component: PlasticGame,
+      difficulty: "Medium",
     },
     'turtle-dash': {
       title: "Turtle Dash",
@@ -97,6 +103,12 @@ export const ChallengesList = () => {
       activeUsers: 2156,
       completionRate: 82,
       icon: "🐢"
+    },{
+      id: 'plastic-cleanup',
+      title: "Plastic Cleanup",
+      description: "Help clean up the plastic from the ocean",
+      reward: "Pixel HammerHead",
+      difficulty: "Medium",
     }
   ];
 
