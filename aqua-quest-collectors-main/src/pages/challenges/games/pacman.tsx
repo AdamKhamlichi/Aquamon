@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Timer from "@/components/game/timer";
 
-const element = ["⬛", "🦐", "🐢", " ", "🚢"];
+const element = ["⬛", "🦐", "🐢", " ", "🛍"];
 
 const generateMaze = (gridSize = 20) => {
   let grid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(0));
@@ -108,7 +108,7 @@ const Pacman = () => {
   const handleSecondsChange = useCallback((newSeconds) => {
     setSeconds(newSeconds);
 
-    if(points + lost === total)
+    if(countOccurrences(grid, 1) == 0)
     {
         navWinningPage;
     }
@@ -204,6 +204,8 @@ const Pacman = () => {
     newGrid[newX][newY] = 2;
     setGrid(newGrid);
     setPos([newX, newY]);
+    console.log(countOccurrences(newGrid, 1));
+    countOccurrences(newGrid, 1) <= 0 ? navWinningPage : [];
   };
 
   useEffect(() => {
