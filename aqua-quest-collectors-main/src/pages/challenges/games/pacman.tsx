@@ -34,7 +34,7 @@ const generateMaze = (gridSize = 20) => {
   grid[start[0]][start[1]] = 2;
 
   let bots = [];
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 6; i++) {
     let start = [-1 , -1];
     while (start[0] == -1 || start[1] == -1 || grid[start[0]][start[1]] !== 3) {
       start[0] = Math.floor(Math.random() * grid.length);
@@ -117,7 +117,7 @@ const Pacman = () => {
     setSeconds(newSeconds);
     if(points + lost === total)
     {
-        console.log("game");
+        navWinningPage;
     }
   }, []);
 
@@ -154,10 +154,10 @@ const Pacman = () => {
   
   const updatePos = (pos, index, newGrid, newBots) => {
     let tile = Math.floor(Math.random() * 2); // 0 is for x, 1 is for y
-    let movement = Math.round(Math.random() * 2) - 1; // -1 or 1 for movement
-
-    movement = movement === 0 ? movement-=1 : movement;
-  
+    
+    // Ensure movement is either -1 or 1 (not 0)
+    let movement = (Math.random() < 0.5) ? -1 : 1; // Randomly set movement to -1 or 1
+    
     let moveSuccess = false;
     let newPos = [...pos]; // Clone the original position
   
@@ -171,7 +171,7 @@ const Pacman = () => {
       } else {
         // Randomly change direction if current movement is invalid
         tile = Math.floor(Math.random() * 2); // Re-choose the axis to move (x or y)
-        movement = Math.floor(Math.random() * 2) - 1; // Re-choose direction (1 or -1)
+        movement = (Math.random() < 0.5) ? -1 : 1; // Re-choose direction (1 or -1)
       }
     }
   
@@ -235,28 +235,37 @@ const Pacman = () => {
 
 
   return (
-    <div className="flex flex-wrap w-[500px]">
-      {grid.map((row, rowIndex) =>
-        row.map((cell, colIndex) => (
-          <div
-            key={`${rowIndex}-${colIndex}`}
-            className="w-[25px] h-[25px] border border-gray-300 bg-white flex justify-center items-center"
-          >
-            {element[cell]}
+    <div className="flex justify-center items-center min-h-screen">
+      <div className="flex flex-col items-center">
+        {/* Ocean Cleanup Title */}
+        <h1 className="text-4xl font-bold mb-6">Ocean Cleanup</h1>
+  
+        {/* Maze Grid */}
+        <div className="flex flex-wrap w-[500px]">
+          {grid.map((row, rowIndex) =>
+            row.map((cell, colIndex) => (
+              <div
+                key={`${rowIndex}-${colIndex}`}
+                className="w-[25px] h-[25px] border border-gray-300 bg-white flex justify-center items-center"
+              >
+                {element[cell]}
+              </div>
+            ))
+          )}
+          <div className="mt-4">
+            Current Position: ({currentPos[0]}, {currentPos[1]})
           </div>
-        ))
-      )}
-      <div className="mt-4">
-        Current Position: ({currentPos[0]}, {currentPos[1]})
-      </div>
-      <div>
-        <Timer onSecondsChange={handleSecondsChange} />
-        <h1>Points gained: {points}</h1>
-        <h1>Points lost: {lost}</h1>
-        <h1>Total possible: {total} </h1>
+          <div>
+            <Timer onSecondsChange={handleSecondsChange} />
+            <h1>Points gained: {points}</h1>
+            <h1>Points lost: {lost}</h1>
+            <h1>Total possible: {total} </h1>
+          </div>
+        </div>
       </div>
     </div>
   );
+  
 };
 
 export default Pacman;
