@@ -1,15 +1,25 @@
 import { useState, useEffect } from "react";
 
-const Timer = () => {
+const Timer = ({ onSecondsChange }) => {
     const [seconds, setSeconds] = useState(0);
   
     useEffect(() => {
       const intervalId = setInterval(() => {
-        setSeconds(prevSeconds => prevSeconds + 1);
+        setSeconds((prevSeconds) => {
+          const newSeconds = prevSeconds + 1;
+  
+          // Send updated seconds to the parent through the callback
+          if (onSecondsChange) {
+            onSecondsChange(newSeconds); // Notify parent with new seconds
+          }
+  
+          return newSeconds;
+        });
       }, 1000);
   
+      // Cleanup interval when Timer component unmounts
       return () => clearInterval(intervalId);
-    }, []);
+    }, [onSecondsChange]); // Dependency array makes sure the effect runs only once
   
     const formatTime = (time) => {
       const minutes = Math.floor(time / 60);
@@ -19,7 +29,7 @@ const Timer = () => {
   
     return (
       <div>
-        <h1>{formatTime(seconds)}</h1>
+        <h2>Timer: {formatTime(seconds)}</h2>
       </div>
     );
   };

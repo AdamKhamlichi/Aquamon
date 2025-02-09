@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Timer from "@/components/game/timer";
 
-const element = ["⬛", "🦐", "🐢", " "];
+const element = ["⬛", "🦐", "🐢", " ", "🚢"];
 
 const startPoint = (gridSize) => {
   let ran = [Math.floor(Math.random() * gridSize), Math.floor(Math.random() * gridSize)];
@@ -39,8 +39,32 @@ const generateMaze = (gridSize = 20) => {
           }
         }
       }*/      //TRY TO CHANGE AFTER TO SPAWN SHRIMPS EVERYWHERE
+
+    let start = [-1 , -1];
+    while (start[0] == -1 || start[1] == -1 || grid[start[0]][start[1]] !== 3)
+    {
+        console.log(grid[0].length);
+        start[0] = Math.floor(Math.random() * grid.length);
+        start[1] = Math.floor(Math.random() * grid.length);
+    }
+    grid[start[0]][start[1]] = 2;
+
+    let bots = [];
+
+    for (let i = 0; i < 4; i++)
+    {
+        let start = [-1 , -1];
+        while (start[0] == -1 || start[1] == -1 || grid[start[0]][start[1]] !== 3)
+        {
+            console.log(grid[0].length);
+            start[0] = Math.floor(Math.random() * grid.length);
+            start[1] = Math.floor(Math.random() * grid.length);
+        }
+        grid[start[0]][start[1]] = 4;
+        bots.push(start);
+    }
     
-    return grid;
+    return [grid, start, bots];
 
   };
 
@@ -52,6 +76,7 @@ const findStartPos = (grid) => {
         start[0] = Math.floor(Math.random() * grid.length);
         start[1] = Math.floor(Math.random() * grid.length);
     }
+    grid[start[0]][start[1]] = 2;
     return start;
 }
 
@@ -59,12 +84,15 @@ const Pacman = () => {
   const gridSize = 20;
   const [grid, setGrid] = useState([]);
   const [currentPos, setPos] = useState([null]);
+  const [bots, setBots] = useState(null);
+  const [seconds, setSeconds] = useState(0)
   
   useEffect(() => {
-    const newGrid = generateMaze(gridSize);
-    const startPos = findStartPos(newGrid);
-    setGrid(newGrid);
-    setPos(startPos);
+    const infoMap = generateMaze(gridSize);
+    setGrid(infoMap[0]);
+    setBots(infoMap[2]);
+    setPos(infoMap[1]);
+
   }, []);
   /*useEffect(() => {
     const start = startPoint(gridSize);
@@ -90,31 +118,40 @@ const Pacman = () => {
     console.log("Turtle position changed:", currentPos);
   }, [currentPos]);
 
+  useEffect(() => {
+    console.log("timer changed")
+  },[]);
+
+  const handleSecondsChange = (newSeconds) => {
+    setSeconds(newSeconds); // Update parent's state
+    console.log(`Parent received seconds: ${newSeconds}`);
+  };
+
   const handleKeyPress = (event) => {
     let [x, y] = currentPos;
 
     switch (event.key) {
       case "ArrowUp":
         if (x > 0 && grid[x - 1][y] !== 0) {
-          moveTurtle(x, y, x - 1, y);
+          move(x, y, x - 1, y);
         }
         break;
 
       case "ArrowLeft":
         if (y > 0 && grid[x][y - 1] !== 0) {
-          moveTurtle(x, y, x, y - 1);
+          move(x, y, x, y - 1);
         }
         break;
 
       case "ArrowDown":
         if (x < gridSize - 1 && grid[x + 1][y] !== 0) {
-          moveTurtle(x, y, x + 1, y);
+          move(x, y, x + 1, y);
         }
         break;
 
       case "ArrowRight":
         if (y < gridSize - 1 && grid[x][y + 1] !== 0) {
-          moveTurtle(x, y, x, y + 1);
+          move(x, y, x, y + 1);
         }
         break;
 
@@ -123,7 +160,7 @@ const Pacman = () => {
     }
   };
 
-  const moveTurtle = (oldX, oldY, newX, newY) => {
+  const move = (oldX, oldY, newX, newY) => {
     const newGrid = [...grid];
     newGrid[oldX][oldY] = 3;
     newGrid[newX][newY] = 2;
@@ -156,7 +193,7 @@ const Pacman = () => {
       </div>
 
       <div>
-        <Timer></Timer>
+        <Timer onSecondsChange={handleSecondsChange}></Timer>
       </div>
     </div>
   );
