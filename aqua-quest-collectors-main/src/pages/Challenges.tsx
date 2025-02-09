@@ -39,13 +39,14 @@ export const ChallengeWrapper = () => {
       description: "Help clean up the plastic from the ocean",
       component: PlasticGame,
       difficulty: "Medium",
+      reward: "Mad HammerHead"
     },
     'trash-slasher': {
       title: "Trash Slasher",
       description: "Help clean up the ocean by slicing through trash",
       component: TrashSlayer,
       difficulty: "Medium",
-      reward: "Legendary Pixel Pufferfish",
+      reward: "Huge Whale",
       icon: "🗑️"
     }
 
@@ -121,7 +122,7 @@ export const ChallengesList = () => {
       id: 'plastic-cleanup',
       title: "Plastic Cleanup",
       description: "Help clean up the plastic from the ocean",
-      reward: "Pixel HammerHead",
+      reward: "🔨 Mad HammerHead",
       difficulty: "Medium",
       activeUsers: 277,
       completionRate: 15,
@@ -131,7 +132,7 @@ export const ChallengesList = () => {
       id: "trash-slasher",
       title: "Trash Slasher",
       description: "Help clean up the ocean by slicing through trash",
-      reward: "🐡 Legendary Pixel Pufferfish",
+      reward: "🐋 Huge Whale",
       difficulty: "Medium",
       activeUsers: 1856,
       completionRate: 78,
