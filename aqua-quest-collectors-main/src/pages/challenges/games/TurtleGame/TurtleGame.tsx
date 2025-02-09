@@ -13,6 +13,9 @@ import sadTurtleImg from "@/assets/baby_turtle_sad.png";
 import jumpSoundFile from "/sounds/jump.mp3";
 import collisionSoundFile from "/sounds/collision.mp3";
 import gameOverSoundFile from "/sounds/gameover.mp3";
+import { supabase } from "@/integrations/supabase/client";
+import { awardFishToUser } from "@/communication/awardFishToUser";
+import { FishType } from "@/types/fishe-types";
 
 
 const TurtleGame = () => {
@@ -94,7 +97,7 @@ const TurtleGame = () => {
             "Help protect turtles by reducing waste."
         ];
 
-        const update = () => {
+        const update = async () => {
             if (gameOver) {
                 render();
                 // Draw a styled game over overlay
@@ -114,6 +117,15 @@ const TurtleGame = () => {
                     canvas.width / 2,
                     canvas.height / 2 + 8
                 );
+                const userId = (await supabase.auth.getSession()).data.session.user.id;
+                if(score > 100){
+                    awardFishToUser(userId,FishType.EvolvedTurtle);
+                    return;
+                }
+                if(score > 50){
+                    awardFishToUser(userId,FishType.BabyTurtle);
+                    return;
+                }
                 return;
             }
 
@@ -224,24 +236,26 @@ const TurtleGame = () => {
                 <h1 className="text-4xl font-bold text-white mb-6">Turtle Dash</h1>
                 <div className="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-6">
                     <p className="text-2xl text-white">Score: {score}</p>
+                    
                     <Button
                         onClick={() => window.location.reload()}
                         className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg shadow-lg"
                     >
                         Restart Game
                     </Button>
+                    
                 </div>
                 <div className="mt-8 relative flex justify-center">
                     <canvas
                         ref={canvasRef}
                         className="rounded-lg shadow-2xl border border-gray-300"
-                    />
-                    {/* Optionally overlay a turtle image outside of the canvas */}
-                    <img
+                    /><img
                         src={gameOver ? sadTurtleImg : turtleImg}
                         alt="Turtle"
                         className="w-40 h-40 absolute right-4 top-4"
                     />
+                    {/* Optionally overlay a turtle image outside of the canvas */}
+                    
                 </div>
             </main>
         </div>
