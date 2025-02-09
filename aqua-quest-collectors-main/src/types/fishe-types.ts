@@ -1,6 +1,5 @@
 export enum FishType {
   BabyHammerheadShark = "Baby Hammerhead Shark",
-  MiddleHammerheadShark = "Middle Hammerhead Shark",
   AdultHammerheadShark = "Adult Hammerhead Shark",
   BabyGoldfish = "Baby Goldfish",
   NormalGoldfish = "Normal Goldfish",

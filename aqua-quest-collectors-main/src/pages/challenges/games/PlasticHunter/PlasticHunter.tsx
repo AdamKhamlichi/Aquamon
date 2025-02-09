@@ -3,9 +3,12 @@ import playerImage from './assets/player.png'
 import enemyImage from './assets/plasticbag.png'
 import backgroundImage from './assets/background.jpg'
 import shootSound from './assets/shoot.mp3'
+import {supabase} from "@/integrations/supabase/client.ts";
+import {awardFishToUser} from "@/communication/awardFishToUser.ts";
+import {FishType} from "@/types/fishe-types.ts";
 
 
-const SharpshooterGame = () => {
+const SharpshooterGame = async () => {
     // Game state
     const [playerHealth, setPlayerHealth] = useState(100);
     const [win, setWin] = useState(false); // New state for win condition
@@ -18,7 +21,7 @@ const SharpshooterGame = () => {
     const [facingLeft, setFacingLeft] = useState(false);
     const [audio] = useState(new Audio(shootSound));
     // Player position and movement state
-    const [playerPos, setPlayerPos] = useState({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+    const [playerPos, setPlayerPos] = useState({x: window.innerWidth / 2, y: window.innerHeight / 2});
     const [keysPressed, setKeysPressed] = useState({});
 
     // Constants
@@ -40,7 +43,7 @@ const SharpshooterGame = () => {
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             if (!closest || distance < closest.distance) {
-                return { ...enemy, distance };
+                return {...enemy, distance};
             }
             return closest;
         }, null);
@@ -78,11 +81,11 @@ const SharpshooterGame = () => {
     // Handle keyboard controls
     useEffect(() => {
         const handleKeyDown = (e) => {
-            setKeysPressed(prev => ({ ...prev, [e.key]: true }));
+            setKeysPressed(prev => ({...prev, [e.key]: true}));
         };
 
         const handleKeyUp = (e) => {
-            setKeysPressed(prev => ({ ...prev, [e.key]: false }));
+            setKeysPressed(prev => ({...prev, [e.key]: false}));
         };
 
         const handleKeyPress = (e) => {
@@ -129,7 +132,7 @@ const SharpshooterGame = () => {
                     y = Math.random() * window.innerHeight;
             }
 
-            setEnemies(prev => [...prev, { x, y }]);
+            setEnemies(prev => [...prev, {x, y}]);
         };
 
         const enemyInterval = setInterval(spawnEnemy, 1500);
@@ -167,12 +170,13 @@ const SharpshooterGame = () => {
                 }
 
                 // Keep player within bounds
-                newX = Math.max(PLAYER_SIZE/2, Math.min(window.innerWidth - PLAYER_SIZE/2, newX));
-                newY = Math.max(PLAYER_SIZE/2, Math.min(window.innerHeight - PLAYER_SIZE/2, newY));
+                newX = Math.max(PLAYER_SIZE / 2, Math.min(window.innerWidth - PLAYER_SIZE / 2, newX));
+                newY = Math.max(PLAYER_SIZE / 2, Math.min(window.innerHeight - PLAYER_SIZE / 2, newY));
 
-                return { x: newX, y: newY };
+                return {x: newX, y: newY};
             });
-            setIsMoving(moving);moving
+            setIsMoving(moving);
+            moving
 
             // Update enemy positions
             setEnemies(prev => prev.map(enemy => {
@@ -241,11 +245,20 @@ const SharpshooterGame = () => {
         return () => clearInterval(gameInterval);
     }, [playerPos, bullets, gameOver, keysPressed]);
 
+    if (win) {
+        const userId = (await supabase.auth.getSession()).data.session.user.id;
+        if (score >= 200) {
+            awardFishToUser(userId, FishType.AdultHammerheadShark);
+        }
+        if (score > 50) {
+            awardFishToUser(userId, FishType.BabyHammerheadShark);
+        }
+    }
     return (
         <div
             className="relative w-full h-screen overflow-hidden"
             style={{
-                backgroundImage: `url(${backgroundImage})`,                backgroundSize: 'cover',
+                backgroundImage: `url(${backgroundImage})`, backgroundSize: 'cover',
                 backgroundPosition: 'center'
             }}
         >
@@ -329,7 +342,7 @@ const SharpshooterGame = () => {
                 <div
                     key={index}
                     className="absolute w-2 h-2 bg-yellow-500 rounded-full transform -translate-x-1/2 -translate-y-1/2"
-                    style={{ left: bullet.x, top: bullet.y }}
+                    style={{left: bullet.x, top: bullet.y}}
                 />
             ))}
         </div>
