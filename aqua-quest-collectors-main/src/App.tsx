@@ -16,6 +16,9 @@ import Chat from "./pages/Chat";
 import Pokedex from "./pages/Pokedex";
 import { ChallengesList, ChallengeWrapper } from "./pages/Challenges";
 import NotFound from "./pages/NotFound";
+import Settings from "./pages/Settings";
+import { AudioProvider } from "./contexts/AudioContext";
+import AudioInitializer from "./components/AudioInitializer";
 
 
 const UnderwaterBackground = ({ children }) => {
@@ -243,47 +246,54 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <UnderwaterBackground>
-            <div className="min-h-screen pt-16">
-              <Routes>
-                <Route
-                  path="/login"
-                  element={session ? <Navigate to="/" replace /> : <Login />}
-                />
-                <Route
-                  path="/"
-                  element={session ? <Index /> : <Navigate to="/login" replace />}
-                />
-                <Route
-                  path="/social"
-                  element={session ? <Social /> : <Navigate to="/login" replace />}
-                />
-                <Route
-                  path="/chat"
-                  element={session ? <Chat /> : <Navigate to="/login" replace />}
-                />
-                <Route
-                  path="/pokedex"
-                  element={session ? <Pokedex /> : <Navigate to="/login" replace />}
-                />
-                <Route
-                  path="/challenges"
-                  element={session ? <ChallengesList /> : <Navigate to="/login" replace />}
-                />
-                <Route
-                  path="/challenges/:challengeId"
-                  element={session ? <ChallengeWrapper /> : <Navigate to="/login" replace />}
-                />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </div>
-          </UnderwaterBackground>
-        </BrowserRouter>
-      </TooltipProvider>
+      <AudioProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AudioInitializer />
+            <UnderwaterBackground>
+              <div className="min-h-screen pt-16">
+                <Routes>
+                  <Route
+                    path="/login"
+                    element={session ? <Navigate to="/" replace /> : <Login />}
+                  />
+                  <Route
+                    path="/"
+                    element={session ? <Index /> : <Navigate to="/login" replace />}
+                  />
+                  <Route
+                    path="/social"
+                    element={session ? <Social /> : <Navigate to="/login" replace />}
+                  />
+                  <Route
+                    path="/chat"
+                    element={session ? <Chat /> : <Navigate to="/login" replace />}
+                  />
+                  <Route
+                    path="/pokedex"
+                    element={session ? <Pokedex /> : <Navigate to="/login" replace />}
+                  />
+                  <Route
+                    path="/settings"
+                    element={session ? <Settings /> : <Navigate to="/login" replace />}
+                  />
+                  <Route
+                    path="/challenges"
+                    element={session ? <ChallengesList /> : <Navigate to="/login" replace />}
+                  />
+                  <Route
+                    path="/challenges/:challengeId"
+                    element={session ? <ChallengeWrapper /> : <Navigate to="/login" replace />}
+                  />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </div>
+            </UnderwaterBackground>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AudioProvider>
     </QueryClientProvider>
   );
 };
