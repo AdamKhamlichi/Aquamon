@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // File: src/pages/Social.tsx
 
 import React, { useState, useEffect } from "react";
@@ -34,6 +35,16 @@ interface UserFish {
   id: number;
   species_id: number;
   acquired_at: string;
+}
+
+interface MarineSpeciesRow {
+  id: number;
+  species_id: number;
+  acquired_at: string;
+  marine_species: {
+    id: number;
+    name: string;
+  };
 }
 
 
@@ -90,6 +101,7 @@ const Social: React.FC = () => {
   }, [searchTerm]);
 
   // Fetch the selected user's fish from user_marine_species
+  // Within the fetchUserFish function in Social.tsx
   const fetchUserFish = async (profile: Profile) => {
     setFishLoading(true);
     setSelectedProfile(profile);
@@ -97,11 +109,50 @@ const Social: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from("user_marine_species")
-        .select("id, species_id, acquired_at")
+        .select(`
+        id,
+        species_id,
+        acquired_at,
+        marine_species (
+          id,
+          name
+        )
+      `)
         .eq("user_id", profile.id);
 
       if (error) throw error;
-      setUserFish(data || []);
+
+      console.log("Raw data from supabase:", data);
+
+      // Process the fish data with proper typing
+      const userFish = (data as unknown as MarineSpeciesRow[])?.map(item => {
+        if (!item.marine_species) {
+          console.log("No marine_species for item:", item);
+          return null;
+        }
+
+        console.log("Looking for fish with name:", item.marine_species.name);
+        console.log("All fish data IDs and names:", fishData.map(f => ({ id: f.id, name: f.name })));
+
+        // Use species_id to find the fish in fishData
+        const fishInfo = fishData.find(f => f.name === item.marine_species.name);
+        console.log("Found fish info:", fishInfo);
+
+        if (!fishInfo) {
+          console.log("No fish info found for:", item.marine_species.name);
+          return null;
+        }
+
+        return {
+          id: item.id,
+          species_id: item.marine_species.id, // Use the ID from marine_species
+          acquired_at: item.acquired_at,
+          ...fishInfo
+        };
+      }).filter(Boolean);
+
+      console.log("Final processed userFish:", userFish);
+      setUserFish(userFish || []);
     } catch (err) {
       console.error("Error fetching user fish:", err);
     } finally {
@@ -201,17 +252,25 @@ const Social: React.FC = () => {
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {userFish.map((fish) => {
-                      // Find the fish info from fishData by species_id
-                      const fishDetail = fishData.find((f) => f.id === fish.species_id);
+                      // Log the fish we're trying to display
+                      console.log("Displaying fish:", fish);
 
-                      // If we can't find a matching entry, just show ID
+                      // Find the fish info from fishData by name to ensure exact match
+                      //@ts-expect-error
+                      const fishDetail = fishData.find((f) => f.name === fish.name);
+                      console.log("Found fish detail:", fishDetail);
+
+                      // If we can't find a matching entry, show debug info
                       if (!fishDetail) {
                         return (
                           <div
                             key={fish.id}
                             className="bg-cyan-500/10 rounded-xl p-4 border border-cyan-300/20 text-cyan-50"
                           >
-                            <p>Unknown Fish (species_id = {fish.species_id})</p>
+                            <p>Debug Info:</p>
+                            <pre className="text-xs overflow-auto">
+                              {JSON.stringify(fish, null, 2)}
+                            </pre>
                           </div>
                         );
                       }
@@ -225,13 +284,15 @@ const Social: React.FC = () => {
                           whileHover={{ scale: 1.02 }}
                           className="bg-cyan-500/10 rounded-xl p-4 border border-cyan-300/20 text-cyan-50"
                         >
-                          {/* Basic Info */}
                           <div className="flex items-center justify-between mb-2">
-                            <img
-                              src={getFishImageSrc(fishDetail)}
-                              alt={fishDetail.name}
-                              className="w-12 h-12 object-contain"
-                            />
+                            <div className="flex flex-col">
+                              <img
+                                src={getFishImageSrc(fishDetail)}
+                                alt={fishDetail.name}
+                                className="w-12 h-12 object-contain"
+                              />
+                              <span className="text-xs mt-1">ID: {fish.species_id}</span>
+                            </div>
                             <span className="text-sm italic text-cyan-100/70">
                               Acquired: {new Date(fish.acquired_at).toLocaleString()}
                             </span>
@@ -245,7 +306,6 @@ const Social: React.FC = () => {
                             Level: <span className="font-bold">{fishDetail.level}</span>
                           </p>
 
-                          {/* Extended Info */}
                           <div className="mt-2 text-sm text-cyan-100/80">
                             <p className="mb-1 font-medium">{fishDetail.description}</p>
                             <p>Habitat: {fishDetail.habitat}</p>
