@@ -88,6 +88,16 @@ export const ChallengesList = () => {
 
   const challenges = [
     {
+      id: "koi-raid",
+      title: "Koi Fish Raid",
+      description: "On February 14th, meet up with fellow AquaQuest players at your nearest raid to obtain the Legendary Koi Fish!",
+      reward: "🐟 Legendary Koi Fish",
+      difficulty: "Hard",
+      activeUsers: 0,
+      completionRate: 100,
+      icon: "🐟"
+    },
+    {
       id: "coral-restoration",
       title: "Coral Restoration",
       description: "Match and collect corals to restore marine ecosystems",
@@ -212,10 +222,11 @@ export const ChallengesList = () => {
                       Reward: <span className="font-semibold">{challenge.reward}</span>
                     </div>
                     <Button
-                        onClick={() => navigate(`/challenges/${challenge.id}`)}
-                        className="bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-100 border border-cyan-300/20"
+                      onClick={() => navigate(`/challenges/${challenge.id}`)}
+                      className="bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-100 border border-cyan-300/20"
+                      disabled={challenge.id === 'koi-raid'}
                     >
-                      Start Challenge
+                      {challenge.id === 'koi-raid' ? 'See you on Feb 14th!' : 'Start Challenge'}
                     </Button>
                   </div>
 

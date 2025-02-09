@@ -18,6 +18,7 @@ import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import { AudioProvider } from "./contexts/AudioContext";
 import AudioInitializer from "./components/AudioInitializer";
+import About from "./pages/About";
 
 // --------------
 // 1) CREATE THE CONTEXT
@@ -330,6 +331,10 @@ const App = () => {
                   <Route
                     path="/challenges/:challengeId"
                     element={session ? <ChallengeWrapper /> : <Navigate to="/login" replace />}
+                  />
+                  <Route
+                    path="/about"
+                    element={session ? <About /> : <Navigate to="/about" replace />}
                   />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
