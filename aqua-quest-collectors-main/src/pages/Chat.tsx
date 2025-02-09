@@ -19,6 +19,7 @@ const Chat = () => {
   const [loading, setLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
+  // Scroll to the bottom when messages update
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -31,34 +32,55 @@ const Chat = () => {
     e.preventDefault();
     if (!input.trim()) return;
 
+    // Prepare the user message and update state
     const userMessage = {
       id: Date.now(),
       text: input,
       isBot: false,
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    // Create an updated messages array to send as payload
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
     setInput("");
     setLoading(true);
 
-    // Simulate bot response with ocean-themed messages
-    setTimeout(() => {
-      const botResponses = [
-        "🌊 Did you know the ocean covers 71% of Earth's surface?",
-        "🐠 Coral reefs are home to 25% of all marine species!",
-        "🐋 A blue whale's heart can be as big as a car!",
-        "🌿 Most of Earth's oxygen comes from ocean plants!",
-        "🦈 Sharks have survived 4 mass extinctions!",
-      ];
+    try {
+      // Call the serverless function /api/chat
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ messages: updatedMessages }),
+      });
 
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      // Assuming the API returns data in the format:
+      // { choices: [ { message: { role: "assistant", content: "..." } } ] }
+      const botResponse = data.choices?.[0]?.message?.content;
       const botMessage = {
         id: Date.now() + 1,
-        text: botResponses[Math.floor(Math.random() * botResponses.length)],
+        text: botResponse || "Sorry, I couldn't generate a response.",
         isBot: true,
       };
-      setMessages(prev => [...prev, botMessage]);
+
+      setMessages((prev) => [...prev, botMessage]);
+    } catch (error) {
+      console.error("Error in handleSend:", error);
+      const errorMessage = {
+        id: Date.now() + 1,
+        text: "Sorry, there was an error processing your request.",
+        isBot: true,
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -109,7 +131,7 @@ const Chat = () => {
               ))}
             </AnimatePresence>
 
-            {/* Typing indicator */}
+            {/* Typing Indicator */}
             {loading && (
               <div className="flex items-center space-x-2 text-cyan-100 absolute bottom-4 left-4">
                 <div className="flex space-x-1">
@@ -126,7 +148,9 @@ const Chat = () => {
                     />
                   ))}
                 </div>
-                <span className="text-sm text-cyan-200/70">AquaBot is typing...</span>
+                <span className="text-sm text-cyan-200/70">
+                  AquaBot is typing...
+                </span>
               </div>
             )}
             <div ref={chatEndRef} />
@@ -155,7 +179,7 @@ const Chat = () => {
               "🐠 Tell me about coral reefs",
               "🌊 Ocean pollution",
               "🐋 Marine mammals",
-              "🦈 Shark conservation"
+              "🦈 Shark conservation",
             ].map((question) => (
               <button
                 key={question}
