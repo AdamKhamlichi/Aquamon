@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // File: src/pages/Settings.tsx
 
 import React, { useState, useEffect } from "react";
@@ -21,45 +22,84 @@ import {
 } from "lucide-react";
 
 import { useAudio } from "@/hooks/use-audio";
+// If you want to cross-reference fish info by name/ID
 
 const Settings = () => {
-    // Get audio states from the AudioContext
-    const {
-        volume,
-        setVolume,
-        isMuted,
-        setIsMuted,
-        isPlaying,
-        setIsPlaying,
-    } = useAudio();
+    // Audio states from AudioContext
+    const { volume, setVolume, isMuted, setIsMuted, isPlaying, setIsPlaying } = useAudio();
 
     // Local state for user info
     const [user, setUser] = useState<User | null>(null);
 
-    // Example stats for demonstration
-    // collectedNormal + collectedShiny = total collected
-    const [stats, setStats] = useState({
-        gamesPlayed: 42,
-        totalScore: 12500,
-        highestLevel: 5,
-        collectedNormal: 10, // How many normal the user has (out of 16)
-        collectedShiny: 2,   // How many shiny the user has (out of 16)
-    });
+    // Stats we fetch dynamically
+    const [gamesPlayed, setGamesPlayed] = useState<number>(0);
+    const [totalScore, setTotalScore] = useState<number>(0);
+    const [highestLevel, setHighestLevel] = useState<number>(0);
+    const [collectedNormal, setCollectedNormal] = useState<number>(0);
+    const [collectedShiny, setCollectedShiny] = useState<number>(0);
 
     useEffect(() => {
-        const getUser = async () => {
+        // 1) Load user
+        const loadUser = async () => {
             const {
-                data: { user },
+                data: { user: currentUser },
             } = await supabase.auth.getUser();
-            setUser(user);
+            setUser(currentUser);
+
+            if (currentUser) {
+                // 2) You might fetch stats from a "profiles" table or "stats" table if you have one
+                // or handle it in your own custom logic.
+                // Example placeholder of how you might retrieve "gamesPlayed" or "totalScore":
+                /*
+                const { data: profileData } = await supabase
+                  .from("profiles")
+                  .select("games_played, total_score, highest_level")
+                  .eq("id", currentUser.id)
+                  .single();
+
+                if (profileData) {
+                  setGamesPlayed(profileData.games_played);
+                  setTotalScore(profileData.total_score);
+                  setHighestLevel(profileData.highest_level);
+                }
+                */
+
+                // 3) Now fetch the user's owned species from user_marine_species
+                const { data, error } = await supabase
+                    .from("user_marine_species")
+                    .select('marine_species ( id, name )')
+                    .eq("user_id", currentUser.id);
+
+                if (data && !error) {
+                    // Suppose you handle "shiny" or "normal" in your DB:
+                    // We'll do a simplistic approach: match them with fishData
+                    // Then count how many have a "shiny" property if you keep that in your DB.
+                    let normalCount = 0;
+                    const shinyCount = 0;
+
+                    // If your DB has a boolean "is_shiny" column, you'd check it here.
+                    // For now, let's assume half are "normal" by your logic; you can adapt as needed:
+
+                    data.forEach((row: any) => {
+                        // row.marine_species is something like { id: x, name: "...", ... }
+                        // If you do store "is_shiny" in your DB, do:
+                        // if (row.marine_species.is_shiny) shinyCount++;
+                        // else normalCount++;
+                        normalCount++;
+                    });
+
+                    setCollectedNormal(normalCount);
+                    setCollectedShiny(shinyCount);
+                }
+            }
         };
-        getUser();
+
+        loadUser();
     }, []);
 
     // Handle volume slider
     const handleVolumeChange = (value: number[]) => {
         setVolume(value[0]);
-        // Optionally, auto-unmute if volume goes above 0
         if (value[0] > 0 && isMuted) {
             setIsMuted(false);
         }
@@ -68,14 +108,12 @@ const Settings = () => {
     // Toggle background music
     const handleMusicToggle = (checked: boolean) => {
         setIsPlaying(checked);
-        // Optionally unmute if turning the music on
         if (checked && isMuted) {
             setIsMuted(false);
         }
     };
 
-    // Calculate total collectibles
-    const totalCollected = stats.collectedNormal + stats.collectedShiny;
+    const totalCollected = collectedNormal + collectedShiny;
 
     return (
         <div className="min-h-screen bg-transparent pb-20 md:pb-0 md:pt-20">
@@ -119,31 +157,32 @@ const Settings = () => {
 
                             <div className="text-center">
                                 <p className="text-cyan-100 font-medium">{user?.email}</p>
-                                <p className="text-cyan-200/70 text-sm">
-                                    Player since{" "}
-                                    {new Date(user?.created_at || "").toLocaleDateString()}
-                                </p>
+                                {user?.created_at && (
+                                    <p className="text-cyan-200/70 text-sm">
+                                        Player since {new Date(user.created_at).toLocaleDateString()}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-3 gap-4 mt-6">
                                 <div className="bg-white/5 rounded-xl p-4 text-center">
                                     <Trophy className="w-5 h-5 text-yellow-300 mx-auto mb-2" />
                                     <div className="text-lg font-semibold text-cyan-100">
-                                        {stats.gamesPlayed}
+                                        {gamesPlayed}
                                     </div>
                                     <div className="text-xs text-cyan-200/70">Games Played</div>
                                 </div>
                                 <div className="bg-white/5 rounded-xl p-4 text-center">
                                     <Star className="w-5 h-5 text-yellow-300 mx-auto mb-2" />
                                     <div className="text-lg font-semibold text-cyan-100">
-                                        {stats.totalScore}
+                                        {totalScore}
                                     </div>
                                     <div className="text-xs text-cyan-200/70">Total Score</div>
                                 </div>
                                 <div className="bg-white/5 rounded-xl p-4 text-center">
                                     <Shell className="w-5 h-5 text-cyan-300 mx-auto mb-2" />
                                     <div className="text-lg font-semibold text-cyan-100">
-                                        {stats.highestLevel}
+                                        {highestLevel}
                                     </div>
                                     <div className="text-xs text-cyan-200/70">Highest Level</div>
                                 </div>
@@ -155,7 +194,7 @@ const Settings = () => {
                                 <div className="bg-white/5 rounded-xl p-4 text-center">
                                     <Fish className="w-5 h-5 text-cyan-300 mx-auto mb-2" />
                                     <div className="text-lg font-semibold text-cyan-100">
-                                        Normal: {stats.collectedNormal} / 16
+                                        Normal: {collectedNormal} / 16
                                     </div>
                                     <div className="text-xs text-cyan-200/70">Common</div>
                                 </div>
@@ -164,7 +203,7 @@ const Settings = () => {
                                 <div className="bg-white/5 rounded-xl p-4 text-center">
                                     <Fish className="w-5 h-5 text-yellow-300 mx-auto mb-2" />
                                     <div className="text-lg font-semibold text-cyan-100">
-                                        Shiny: {stats.collectedShiny} / 16
+                                        Shiny: {collectedShiny} / 16
                                     </div>
                                     <div className="text-xs text-cyan-200/70">Shiny</div>
                                 </div>
@@ -203,11 +242,7 @@ const Settings = () => {
                                         onClick={() => setIsMuted(!isMuted)}
                                         className="text-cyan-200 hover:text-cyan-100"
                                     >
-                                        {isMuted ? (
-                                            <VolumeX className="w-5 h-5" />
-                                        ) : (
-                                            <Volume2 className="w-5 h-5" />
-                                        )}
+                                        {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                                     </Button>
                                 </div>
                                 <Slider
@@ -226,10 +261,7 @@ const Settings = () => {
                             {/* Background Music */}
                             <div className="flex items-center justify-between">
                                 <span className="text-cyan-100">Background Music</span>
-                                <Switch
-                                    checked={isPlaying}
-                                    onCheckedChange={handleMusicToggle}
-                                />
+                                <Switch checked={isPlaying} onCheckedChange={handleMusicToggle} />
                             </div>
 
                             {/* Mute All */}
@@ -245,7 +277,7 @@ const Settings = () => {
                         <div className="mt-8">
                             <Button
                                 onClick={() => {
-                                    // You can save to a DB or just let localStorage handle it
+                                    // Optionally, save these settings to DB if needed
                                 }}
                                 className="w-full bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-100 backdrop-blur-sm border border-cyan-300/20"
                             >

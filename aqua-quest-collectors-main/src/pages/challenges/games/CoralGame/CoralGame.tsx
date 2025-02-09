@@ -12,6 +12,8 @@ import winSoundFile from "/sounds/success.mp3";
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 
+import { awardFishToUser } from "@/communication/awardFishToUser";
+
 // Subcomponents
 import {
     ModeSelection,
@@ -34,6 +36,8 @@ import {
     GameMode,
     CORALS,
 } from "./constant";
+import { supabase } from "@/integrations/supabase/client";
+import { FishType } from "@/types/fishe-types";
 
 const CoralGame: React.FC = () => {
     // Basic states
@@ -372,6 +376,7 @@ const CoralGame: React.FC = () => {
     };
 
     const checkMatches = async (currentGrid: (string | null)[][]): Promise<boolean> => {
+        const userId = (await supabase.auth.getSession()).data.session.user.id;
         let hasMatches = false;
         const matchPositions = new Set<string>();
         const matchedCoralsArr: string[] = [];
@@ -483,10 +488,12 @@ const CoralGame: React.FC = () => {
                 if (score >= lvl.targetScore) {
                     setGameOver(true);
                     triggerWinEffects();
+                    awardFishToUser(userId, FishType.BabyGreatWhiteShark)
                 }
             } else if (gameMode === GAME_MODES.CHALLENGE && score >= WINNING_SCORE) {
                 setGameOver(true);
                 triggerWinEffects();
+                awardFishToUser(userId, FishType.BabyGreatWhiteShark)
             }
         } else {
             // no match => free up
