@@ -10,7 +10,7 @@ import { Star, Timer, Trophy, Users } from 'lucide-react';
 
 // Lazy load the CoralGame component
 const CoralGame = React.lazy(() => import('./challenges/games/CoralGame/CoralGame'));
-const TurtleGame = React.lazy(() => import('./challenges/games/TurtleGame'));
+const TurtleGame = React.lazy(() => import('./challenges/games/TurtleGame/TurtleGame'));
 
 export const ChallengeWrapper = () => {
   const { challengeId } = useParams();

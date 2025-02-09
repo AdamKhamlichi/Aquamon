@@ -29,6 +29,12 @@ const AudioInitializer = () => {
                         <span className="text-xl">🎵</span>
                         Click to enable ambient sounds
                     </button>
+                    <button
+                        onClick={() => setShowPrompt(false)}
+                        className="absolute top-0 right-0 mt-2 mr-2 text-cyan-100 hover:text-cyan-300"
+                    >
+                        ✖
+                    </button>
                 </motion.div>
             )}
         </AnimatePresence>
