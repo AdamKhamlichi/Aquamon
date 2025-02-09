@@ -4,7 +4,7 @@ import { toast } from "sonner";
 
 export async function awardFishToUser(userId: string, fishName: FishType) {
   try {
-    // 1) First check if user already has either variant
+    // 1) Check if user already has either variant (normal or shiny)
     const { data: existingNormal, error: normalCheckError } = await supabase
       .from("user_marine_species")
       .select(
@@ -33,36 +33,21 @@ export async function awardFishToUser(userId: string, fishName: FishType) {
       .eq("marine_species.name", `Shiny ${fishName}`)
       .single();
 
-    // PGRST116 is the "no rows returned" error code, which is expected when the user doesn't have the fish
-    if (normalCheckError?.code !== "PGRST116" && normalCheckError) {
-      console.error("Error checking existing normal fish:", normalCheckError);
-      return;
-    }
-    if (shinyCheckError?.code !== "PGRST116" && shinyCheckError) {
-      console.error("Error checking existing shiny fish:", shinyCheckError);
+    // When no row is found, Supabase returns an error with code "PGRST116".
+    // We treat that as "not existing" and ignore it.
+    const normalExists = !normalCheckError && existingNormal;
+    const shinyExists = !shinyCheckError && existingShiny;
+
+    // If the user already has either variant, exit without awarding
+    if (normalExists || shinyExists) {
+      console.log("User already has this fish.");
       return;
     }
 
-    // If user has both variants, exit
-    if (existingNormal && existingShiny) {
-      console.log("User already has both variants");
-      return;
-    }
-
-    // 2) Determine which variant to award
-    let variantToAward: "normal" | "shiny" | null = null;
-    if (!existingNormal && !existingShiny) {
-      variantToAward = Math.random() < 0.1 ? "shiny" : "normal";
-    } else if (existingNormal && !existingShiny) {
-      variantToAward = Math.random() < 0.1 ? "shiny" : null;
-    } else if (!existingNormal && existingShiny) {
-      variantToAward = Math.random() < 0.5 ? "normal" : null;
-    }
-
-    if (!variantToAward) {
-      console.log("No new variant to award");
-      return;
-    }
+    // 2) Since the user has neither variant, choose which variant to award.
+    // Here we randomly choose shiny with a 10% chance.
+    const variantToAward: "normal" | "shiny" =
+      Math.random() < 0.1 ? "shiny" : "normal";
 
     // 3) Get the correct species ID
     const fishNameToAward =
