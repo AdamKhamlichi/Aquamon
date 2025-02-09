@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { toast } from "sonner";
 import Navigation from "@/components/Navigation";
+import { awardFishToUser } from '@/communication/awardFishToUser';
+import {supabase} from "@/integrations/supabase/client.ts";
+import {FishType} from "@/types/fishe-types.ts";
 
 // Constants
 const TRASH_TYPES = ['plastic', 'nets', 'bottle', 'bag'];
@@ -131,6 +134,7 @@ const TrashSlasher = () => {
                         toast.error(`Game Over! You hit a ${item.type}!`);
                         return item;
                     }
+
 
                     setTimeLeft(time => Math.min(time + TIME_BONUS_ON_TRASH, INITIAL_GAME_DURATION));
                     setScore(s => {
@@ -305,7 +309,22 @@ const TrashSlasher = () => {
                                 )}
                             </div>
                             <Button
-                                onClick={startGame}
+                                onClick={async () => {
+                                    // Award fish based on score before starting a new game
+                                    const session = await supabase.auth.getSession();
+                                    const userId = session.data.session?.user.id;
+
+                                    if (userId) {
+                                        if (score > 200) {
+                                            await awardFishToUser(userId, FishType.EvolvedBabyWhale);
+                                        } else if (score > 50) {
+                                            await awardFishToUser(userId, FishType.BabyWhale);
+                                        }
+                                    }
+
+                                    // Start a new game
+                                    startGame();
+                                }}
                                 className="text-xl px-8 py-4 font-pixel"
                             >
                                 {score > 0 ? 'Play Again' : 'Start Cleaning!'}
