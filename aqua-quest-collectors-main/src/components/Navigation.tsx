@@ -1,4 +1,3 @@
-
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Fish, Users, MessageSquare, Award, List, LogOut } from "lucide-react";
 import { signOut } from "@/lib/auth";
@@ -6,7 +5,7 @@ import { signOut } from "@/lib/auth";
 const Navigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   const links = [
     { to: "/", icon: Fish, label: "Home" },
     { to: "/social", icon: Users, label: "Friends" },
@@ -23,7 +22,7 @@ const Navigation = () => {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-gray-200 py-2 px-4 md:top-0 md:bottom-auto">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white/10 backdrop-blur-md border-t border-white/20 py-2 px-4 md:top-0 md:bottom-auto">
       <div className="max-w-screen-xl mx-auto">
         <ul className="flex justify-around items-center">
           {links.map(({ to, icon: Icon, label }) => {
@@ -32,14 +31,13 @@ const Navigation = () => {
               <li key={to}>
                 <Link
                   to={to}
-                  className={`flex flex-col items-center p-2 transition-all duration-300 rounded-lg ${
-                    isActive
-                      ? "text-primary scale-110"
-                      : "text-gray-600 hover:text-primary hover:scale-105"
-                  }`}
+                  className={`flex flex-col items-center p-2 transition-all duration-300 rounded-lg ${isActive
+                    ? "text-cyan-300 scale-110 bg-white/20"
+                    : "text-white/80 hover:text-cyan-200 hover:scale-105 hover:bg-white/10"
+                    }`}
                 >
                   <Icon className="w-6 h-6" />
-                  <span className="text-xs mt-1">{label}</span>
+                  <span className="text-xs mt-1 font-medium">{label}</span>
                 </Link>
               </li>
             );
@@ -47,10 +45,10 @@ const Navigation = () => {
           <li>
             <button
               onClick={handleLogout}
-              className="flex flex-col items-center p-2 transition-all duration-300 rounded-lg text-gray-600 hover:text-primary hover:scale-105"
+              className="flex flex-col items-center p-2 transition-all duration-300 rounded-lg text-white/80 hover:text-cyan-200 hover:scale-105 hover:bg-white/10"
             >
               <LogOut className="w-6 h-6" />
-              <span className="text-xs mt-1">Logout</span>
+              <span className="text-xs mt-1 font-medium">Logout</span>
             </button>
           </li>
         </ul>

@@ -624,9 +624,10 @@ const CoralGame: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-sky-100 to-white pb-20 pt-16 relative overflow-hidden">
+        <div className="min-h-screen bg-transparent pb-20 md:pb-0 md:pt-20 relative overflow-hidden">
             <Navigation />
-            <main className="max-w-screen-xl mx-auto px-4 py-8">
+
+            <main className="relative z-10 max-w-screen-xl mx-auto px-4 py-8">
                 {!gameMode ? (
                     <ModeSelection
                         onModeSelect={handleModeSelect}
@@ -640,7 +641,7 @@ const CoralGame: React.FC = () => {
                         onBackToModeSelect={handleBackToModeSelect}
                     />
                 ) : (
-                    <div>
+                    <div className="space-y-8">
                         <StatsBoard
                             gameMode={gameMode}
                             score={score}
@@ -660,37 +661,47 @@ const CoralGame: React.FC = () => {
                             }
                         />
 
-                        {/* Pass matchedPositions so we highlight cells */}
-                        <GameBoard
-                            grid={grid}
-                            selectedCell={selectedCell}
-                            isAnimating={isAnimating}
-                            gameOver={gameOver}
-                            onCellClick={handleCellClick}
-                            matchedPositions={matchedPositions}
-                        />
+                        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 shadow-lg">
+                            <GameBoard
+                                grid={grid}
+                                selectedCell={selectedCell}
+                                isAnimating={isAnimating}
+                                gameOver={gameOver}
+                                onCellClick={handleCellClick}
+                                matchedPositions={matchedPositions}
+                            />
+                        </div>
 
-                        <div className="mt-8 space-y-4 text-center">
-                            <div className="flex justify-center gap-4">
-                                <Button
-                                    onClick={() => setGameMode(null)}
-                                    variant="outline"
-                                    className="bg-white"
-                                >
-                                    Change Mode
-                                </Button>
-                                <Button
-                                    onClick={
-                                        gameMode === GAME_MODES.ADVENTURE
-                                            ? handleReplayLevel
-                                            : initializeGame
-                                    }
-                                    variant="outline"
-                                    className="bg-white"
-                                >
-                                    Restart Game
-                                </Button>
+                        {/* Power-ups Guide */}
+                        <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 max-w-2xl mx-auto">
+                            <h3 className="text-center text-cyan-100 font-semibold mb-4">Special Corals</h3>
+                            <div className="flex justify-around">
+                                {Object.entries(CORALS.special).map(([key, coral]) => (
+                                    <div key={key} className="text-center px-4">
+                                        <div className="text-2xl mb-2">{coral}</div>
+                                        <div className="text-cyan-100 font-medium text-sm">{key}</div>
+                                    </div>
+                                ))}
                             </div>
+                        </div>
+
+                        <div className="flex justify-center gap-4">
+                            <Button
+                                onClick={() => setGameMode(null)}
+                                className="bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-100 backdrop-blur-sm border border-cyan-300/20"
+                            >
+                                Change Mode
+                            </Button>
+                            <Button
+                                onClick={
+                                    gameMode === GAME_MODES.ADVENTURE
+                                        ? handleReplayLevel
+                                        : initializeGame
+                                }
+                                className="bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-100 backdrop-blur-sm border border-cyan-300/20"
+                            >
+                                Restart Game
+                            </Button>
                         </div>
 
                         <GameOverModal
@@ -714,6 +725,35 @@ const CoralGame: React.FC = () => {
                     </div>
                 )}
             </main>
+
+            {/* Decorative Elements */}
+            <div className="pointer-events-none fixed inset-0 bg-gradient-to-t from-[#001440] via-[#002d6b] to-[#0056a8] opacity-50" />
+
+            <div className="pointer-events-none fixed inset-0">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(255,255,255,0.1)_0%,_rgba(0,0,0,0.2)_100%)]" />
+            </div>
+
+            {/* Ambient light rays */}
+            <div className="pointer-events-none fixed inset-0 opacity-30">
+                {Array.from({ length: 8 }).map((_, i) => (
+                    <div
+                        key={`ray-${i}`}
+                        className="absolute w-1/6 h-screen bg-gradient-to-b from-cyan-200/10 to-transparent blur-lg transform -skew-x-12"
+                        style={{
+                            left: `${i * 15}%`,
+                            animationDelay: `${i * 0.5}s`,
+                            animation: 'ray-move 8s infinite ease-in-out'
+                        }}
+                    />
+                ))}
+            </div>
+
+            <style>{`
+            @keyframes ray-move {
+                0%, 100% { transform: skew(-12deg) translateY(0); opacity: 0.3; }
+                50% { transform: skew(-12deg) translateY(-30px); opacity: 0.5; }
+            }
+        `}</style>
         </div>
     );
 };

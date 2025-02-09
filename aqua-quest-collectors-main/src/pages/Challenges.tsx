@@ -4,6 +4,9 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
+import { motion } from 'framer-motion';
+import { Star, Timer, Trophy, Users } from 'lucide-react';
+
 
 // Lazy load the CoralGame component
 const CoralGame = React.lazy(() => import('./challenges/games/CoralGame/CoralGame'));
@@ -58,52 +61,127 @@ export const ChallengesList = () => {
 
   const challenges = [
     {
-      id: 'coral-restoration',
+      id: "coral-restoration",
       title: "Coral Restoration",
-      description: "Help rebuild pixel coral reefs",
-      reward: "Legendary Pixel Shark",
+      description: "Match and collect corals to restore marine ecosystems",
+      reward: "🦈 Legendary Pixel Shark",
       difficulty: "Hard",
+      activeUsers: 1234,
+      completionRate: 75,
+      icon: "🪸"
+    },
+    {
+      id: "ocean-cleanup",
+      title: "Ocean Cleanup",
+      description: "Clear the oceans of digital debris",
+      reward: "🐠 Mystic Angelfish",
+      difficulty: "Medium",
+      activeUsers: 2156,
+      completionRate: 82,
+      icon: "🌊"
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-100 to-white pb-20 md:pb-0 md:pt-20">
+    <div className="min-h-screen bg-transparent pb-20 md:pb-0 md:pt-20">
       <Navigation />
 
-      <main className="max-w-screen-xl mx-auto px-4 py-8">
+      <main className="relative z-10 max-w-screen-xl mx-auto px-4 py-8">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4 font-[pixel] animate-float">
-            Ocean Challenges
-          </h1>
-          <p className="text-gray-600">Complete challenges to collect rare sea creatures</p>
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center gap-4"
+          >
+            <span className="px-3 py-1 bg-cyan-500/20 text-cyan-200 rounded-full text-sm font-medium backdrop-blur-sm">
+              Ocean Missions
+            </span>
+            <h1 className="text-4xl font-bold text-white mb-2 font-pixel flex items-center gap-3">
+              <Trophy className="w-8 h-8 text-yellow-300" />
+              Ocean Challenges
+            </h1>
+            <p className="text-cyan-100 max-w-md">
+              Complete challenges to earn rewards and help protect our oceans
+            </p>
+          </motion.div>
         </div>
 
         <div className="grid gap-6">
-          {challenges.map((challenge) => (
-            <div
+          {challenges.map((challenge, index) => (
+            <motion.div
               key={challenge.id}
-              className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              whileHover={{ scale: 1.02 }}
+              className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-lg hover:shadow-cyan-500/20 transition-all duration-300"
             >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold">{challenge.title}</h3>
-                <span className={`px-3 py-1 rounded-full text-sm ${challenge.difficulty === 'Hard' ? 'bg-red-100 text-red-700' :
-                  challenge.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-green-100 text-green-700'
-                  }`}>
-                  {challenge.difficulty}
-                </span>
+              <div className="flex items-center gap-6 mb-6">
+                <div className="text-5xl bg-cyan-500/10 p-4 rounded-xl border border-cyan-500/20">
+                  {challenge.icon}
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between items-start">
+                    <h3 className="text-xl font-semibold text-cyan-100">{challenge.title}</h3>
+                    <span className={`px-3 py-1 rounded-full text-sm ${challenge.difficulty === 'Hard'
+                      ? 'bg-red-500/20 text-red-200'
+                      : 'bg-yellow-500/20 text-yellow-200'
+                      }`}>
+                      {challenge.difficulty}
+                    </span>
+                  </div>
+                  <p className="text-cyan-200/80 mt-1">{challenge.description}</p>
+                </div>
               </div>
-              <p className="text-gray-600 mb-4">{challenge.description}</p>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-primary">Reward: {challenge.reward}</span>
+
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="bg-white/5 rounded-xl p-4 backdrop-blur-sm">
+                  <Users className="w-5 h-5 text-cyan-300 mb-2" />
+                  <div className="text-lg font-semibold text-cyan-100">
+                    {challenge.activeUsers.toLocaleString()}
+                  </div>
+                  <div className="text-xs text-cyan-200/70">Active Players</div>
+                </div>
+
+                <div className="bg-white/5 rounded-xl p-4 backdrop-blur-sm">
+                  <Timer className="w-5 h-5 text-cyan-300 mb-2" />
+                  <div className="text-lg font-semibold text-cyan-100">
+                    {challenge.completionRate}%
+                  </div>
+                  <div className="text-xs text-cyan-200/70">Completion Rate</div>
+                </div>
+
+                <div className="bg-white/5 rounded-xl p-4 backdrop-blur-sm">
+                  <Star className="w-5 h-5 text-yellow-300 mb-2" />
+                  <div className="text-lg font-semibold text-cyan-100">
+                    {challenge.reward.split(' ')[0]}
+                  </div>
+                  <div className="text-xs text-cyan-200/70">Reward</div>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <div className="text-sm text-cyan-200">
+                  Reward: <span className="font-semibold">{challenge.reward}</span>
+                </div>
                 <Button
-                  variant="outline"
                   onClick={() => navigate(`/challenges/${challenge.id}`)}
+                  className="bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-100 border border-cyan-300/20"
                 >
                   Start Challenge
                 </Button>
               </div>
-            </div>
+
+              {/* Progress bar */}
+              <div className="mt-4 h-1 bg-white/10 rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${challenge.completionRate}%` }}
+                  transition={{ duration: 1, delay: index * 0.2 }}
+                  className="h-full bg-cyan-400/50"
+                />
+              </div>
+            </motion.div>
           ))}
         </div>
       </main>
@@ -113,4 +191,3 @@ export const ChallengesList = () => {
 
 export default ChallengesList;
 
-//
