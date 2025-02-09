@@ -1,9 +1,11 @@
-// api/chat.js
-
 export default async function handler(req, res) {
-    const OPENAI_API_KEY = "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";
+    const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
-    // Allow only POST requests
+    if (!OPENAI_API_KEY) {
+        console.error("Missing OpenAI API Key");
+        return res.status(500).json({ error: "Server configuration error" });
+    }
+
     if (req.method !== "POST") {
         res.setHeader("Allow", ["POST"]);
         return res
@@ -19,22 +21,26 @@ export default async function handler(req, res) {
             .json({ error: "Missing 'messages' in the request body." });
     }
 
+    // Transform your messages to the format OpenAI expects
+    const formattedMessages = messages.map((msg) => ({
+        role: msg.isBot ? "assistant" : "user",
+        content: msg.text,
+    }));
+
     try {
-        // Forward the request to OpenAI's API
+        // Forward the request to OpenAI's API with the formatted messages
         const response = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                // Use your secure environment variable for the API key
                 Authorization: `Bearer ${OPENAI_API_KEY}`,
             },
             body: JSON.stringify({
                 model: "gpt-3.5-turbo",
-                messages,
+                messages: formattedMessages,
             }),
         });
 
-        // Check for errors from the OpenAI API
         if (!response.ok) {
             const errorData = await response.text();
             return res.status(response.status).json({ error: errorData });
