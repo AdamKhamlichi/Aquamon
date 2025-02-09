@@ -3,6 +3,9 @@ import playerImage from './assets/player.png'
 import enemyImage from './assets/plasticbag.png'
 import backgroundImage from './assets/background.jpg'
 import shootSound from './assets/shoot.mp3'
+import {supabase} from "@/integrations/supabase/client.ts";
+import {awardFishToUser} from "@/communication/awardFishToUser.ts";
+import {FishType} from "@/types/fishe-types.ts";
 
 
 const SharpshooterGame = () => {
@@ -265,7 +268,29 @@ const SharpshooterGame = () => {
                         <p className="text-xl">Final Score: {score}</p>
                         <button
                             className="mt-4 px-4 py-2 bg-blue-500 rounded hover:bg-blue-600"
-                            onClick={() => window.location.reload()}
+                            onClick={async () => {
+                                // Award fish based on score before reloading
+                                try {
+                                    const session = await supabase.auth.getSession();
+                                    const userId = session.data.session?.user.id;
+
+                                    if (!userId) {
+                                        console.error("User ID not found");
+                                        return;
+                                    }
+
+                                    if (score >= 200) {
+                                        await awardFishToUser(userId, FishType.AdultHammerheadShark);
+                                    } else if (score > 50) {
+                                        await awardFishToUser(userId, FishType.BabyHammerheadShark);
+                                    }
+
+                                    // Reload the page after awarding fish
+                                    window.location.reload();
+                                } catch (error) {
+                                    console.error("Error awarding fish:", error);
+                                }
+                            }}
                         >
                             Play Again
                         </button>
