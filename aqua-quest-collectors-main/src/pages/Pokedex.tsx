@@ -4,47 +4,10 @@ import React, { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { fishData, FishInfo } from "@/types/fishe-types";
 
-interface FishInfo {
-  id: number;
-  name: string;
-  rarity: string;
-  level: number;
-  emoji: string;
-  description: string;
-  habitat: string;
-  population?: string;
-  conservationStatus?: string;
-}
 
-// Your fishData, including Baby Whale (ID=15).
-const fishData: FishInfo[] = [
-  {
-    id: 1,
-    name: "Pixel Puffer",
-    rarity: "Common",
-    level: 5,
-    emoji: "🐡",
-    description: "A spiky friend with attitude",
-    habitat: "Coral Reefs",
-    population: "Stable in most reefs",
-    conservationStatus: "Not currently threatened",
-  },
-  // ... other fish ...
-  {
-    id: 15,
-    name: "Baby Whale",
-    rarity: "Rare",
-    level: 1,
-    emoji: "🐋",
-    description: "A small yet mighty whale in training",
-    habitat: "Deep Ocean",
-    population: "Unknown",
-    conservationStatus: "Data Missing",
-  },
-];
 
-// NOTE: marine_species is an object now, not an array
 interface DBSpeciesRow {
   id: number;
   species_id: number;

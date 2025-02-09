@@ -12,7 +12,7 @@ import winSoundFile from "/sounds/success.mp3";
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 
-import { awardBabyWhaleToUser } from "@/communication/awardBabyWhaleToUser";
+import { awardFishToUser } from "@/communication/awardFishToUser";
 
 // Subcomponents
 import {
@@ -37,6 +37,7 @@ import {
     CORALS,
 } from "./constant";
 import { supabase } from "@/integrations/supabase/client";
+import { FishType } from "@/types/fishe-types";
 
 const CoralGame: React.FC = () => {
     // Basic states
@@ -487,12 +488,12 @@ const CoralGame: React.FC = () => {
                 if (score >= lvl.targetScore) {
                     setGameOver(true);
                     triggerWinEffects();
-                    awardBabyWhaleToUser(userId)
+                    awardFishToUser(userId, FishType.BabyGreatWhiteShark)
                 }
             } else if (gameMode === GAME_MODES.CHALLENGE && score >= WINNING_SCORE) {
                 setGameOver(true);
                 triggerWinEffects();
-                awardBabyWhaleToUser(userId)
+                awardFishToUser(userId, FishType.BabyGreatWhiteShark)
             }
         } else {
             // no match => free up
