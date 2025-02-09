@@ -8,6 +8,8 @@ import { useInteractionSound } from '@/hooks/use-interaction-sound';
 
 // Import games
 const CoralGame = React.lazy(() => import('./games/CoralGame/CoralGame'));
+const PlasticGame = React.lazy(() => import('./games/PlasticHunter/PlasticHunter'));
+
 
 const ChallengeWrapper = () => {
     const { challengeId } = useParams();
@@ -20,6 +22,13 @@ const ChallengeWrapper = () => {
             component: CoralGame,
             difficulty: "Hard",
             reward: "Legendary Pixel Shark"
+        },
+        'plastic-hunter': {
+            title: "Plastic Hunter",
+            description: "Help clean up the plastic from the ocean",
+            component: PlasticGame,
+            difficulty: "Medium",
+            reward: "Pixel HammerHead"
         }
     };
 
@@ -64,6 +73,13 @@ const ChallengesList = () => {
             description: "Help rebuild pixel coral reefs",
             reward: "Legendary Pixel Shark",
             difficulty: "Hard",
+        },
+        {
+            id: 'plastic-hunter',
+            title: "Plastic Hunter",
+            description: "Help clean up the plastic from the ocean",
+            reward: "Pixel HammerHead",
+            difficulty: "Medium",
         }
     ];
 
