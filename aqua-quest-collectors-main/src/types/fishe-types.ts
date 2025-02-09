@@ -181,8 +181,8 @@ export const fishData: FishInfo[] = [
     emoji: "🦈",
     description: "A fearsome but adorable apex predator",
     habitat: "Open Ocean",
-    population: "Unknown",
-    conservationStatus: "Data Missing",
+    population: "Not stable",
+    conservationStatus: "Threatened",
   },
   {
     id: 15,
@@ -192,8 +192,8 @@ export const fishData: FishInfo[] = [
     emoji: "🐋",
     description: "A small yet mighty whale in training",
     habitat: "Deep Ocean",
-    population: "Unknown",
-    conservationStatus: "Data Missing",
+    population: "Endangered",
+    conservationStatus: "Threatened",
   },
   {
     id: 16,
@@ -203,7 +203,7 @@ export const fishData: FishInfo[] = [
     emoji: "🐋",
     description: "A larger whale with more experience",
     habitat: "Deep Ocean",
-    population: "Unknown",
-    conservationStatus: "Data Missing",
+    population: "Endangered",
+    conservationStatus: "Threatened",
   },
 ];
