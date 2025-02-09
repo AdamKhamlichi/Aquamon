@@ -98,16 +98,6 @@ export const ChallengesList = () => {
       icon: "🪸"
     },
     {
-      id: "ocean-cleanup",
-      title: "Ocean Cleanup",
-      description: "Clear the oceans of digital debris",
-      reward: "🐠 Mystic Angelfish",
-      difficulty: "Medium",
-      activeUsers: 2156,
-      completionRate: 82,
-      icon: "🌊"
-    },
-    {
       id: "turtle-dash",
       title: "Turtle Dash",
       description: "Try to survive the polluted oceans",

@@ -98,7 +98,7 @@ const Chat = () => {
           >
             <h1 className="text-4xl font-bold text-white mb-2 font-pixel">
               <MessageCircle className="inline-block w-8 h-8 mr-2" />
-              Ocean Chat
+              AquaBot
             </h1>
             <p className="text-cyan-100 max-w-md">
               Learn about marine life and ocean conservation

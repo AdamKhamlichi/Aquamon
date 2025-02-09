@@ -1,69 +1,52 @@
-# Welcome to your Lovable project
+# 🌊 Aquamon - Gamifying Ocean Awareness
 
-## Project info
+## 📖 About Aquamon
+Aquamon is a web-based game that raises awareness about sea pollution through interactive mini-games. Players engage in challenges that highlight the effects of pollution and, upon winning, collect endangered sea creatures. These creatures can be showcased to friends, similar to Pokémon, promoting engagement and learning in a fun way.
 
-**URL**: https://lovable.dev/projects/d1ef9292-48dd-40fc-b70b-00dde0cc1ff5
+## 🚀 Features
+- 🎮 **Mini-games** that educate players on the impact of plastic and chemical pollution.
+- 🐡 **Collect endangered marine creatures** and learn real-world facts about them.
+- 🔄 **Multilingual support** (English & French).
+- 🤖 **AI-powered chatbot** (Gemini) to provide insights on ocean conservation.
+- 🏆 **Leaderboard and sharing options** to encourage awareness.
 
-## How can I edit this code?
+## 🛠️ Tech Stack
+- **Frontend**: React
+- **Backend**: Express & MongoDB
+- **Game Mechanics**: JavaScript, HTML5 Canvas
+- **AI**: Gemini chatbot integration
 
-There are several ways of editing your application.
+## 🚀 Deployment Guide
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/d1ef9292-48dd-40fc-b70b-00dde0cc1ff5) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
+### Step 1: Install the necessary dependencies
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
 npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```
+### Step 2: Start the development server with auto-reloading
+```sh
 npm run dev
 ```
+## 🛠️ Project Structure
+``` bash
 
-**Edit a file directly in GitHub**
+/aquamon
+│── /frontend      # React-based user interface
+│── /backend       # Express.js API and MongoDB database
+│── /games         # Mini-games and game logic
+│── /assets        # Images, sounds, and other media
+│── .env.example   # Environment variable configuration template
+│── README.md      # Project documentation
+│── package.json   # Dependencies and scripts
+```
+## 🔧 Environment Variables
+Create a .env file in the root directory and configure it based on .env.example.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 📚 Additional Notes
+Ensure you have Node.js installed.
+The project requires a MongoDB database (update .env accordingly).
+AI chatbot features require an API key for OpenAi.
+## 💙 Contributing
+We welcome contributions! Feel free to submit issues or pull requests.
 
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/d1ef9292-48dd-40fc-b70b-00dde0cc1ff5) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+## 🌍 Join the Fight Against Pollution!
+Play, learn, and help protect our oceans—one game at a time. 🌊🐠
