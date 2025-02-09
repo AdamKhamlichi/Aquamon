@@ -1,7 +1,7 @@
 // File: src/components/Navigation.tsx
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Fish, Users, MessageCircle, Award, List, LogOut, Settings } from "lucide-react";
+import { Fish, Users, MessageCircle, Award, List, LogOut, Settings, HelpCircle } from "lucide-react";
 import { signOut } from "@/lib/auth";
 import { useInteractionSound } from "@/hooks/use-interaction-sound";
 
@@ -17,7 +17,7 @@ const Navigation = () => {
     { to: "/pokedex", icon: List, label: "Aquarium" },
     { to: "/challenges", icon: Award, label: "Challenges" },
     { to: "/settings", icon: Settings, label: "Settings" },
-    { to: "/about", icon: Settings, label: "About" }
+    { to: "/about", icon: HelpCircle, label: "About" }
   ];
 
   const handleLogout = async () => {
