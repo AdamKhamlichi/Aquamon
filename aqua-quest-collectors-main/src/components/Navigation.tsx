@@ -1,5 +1,7 @@
+// File: src/components/Navigation.tsx
+
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Fish, Users, MessageSquare, Award, List, LogOut } from "lucide-react";
+import { Fish, Users, MessageCircle, Award, List, LogOut, Settings } from "lucide-react";
 import { signOut } from "@/lib/auth";
 
 const Navigation = () => {
@@ -9,9 +11,10 @@ const Navigation = () => {
   const links = [
     { to: "/", icon: Fish, label: "Home" },
     { to: "/social", icon: Users, label: "Friends" },
-    { to: "/chat", icon: MessageSquare, label: "Chat" },
+    { to: "/chat", icon: MessageCircle, label: "Chat" },
     { to: "/pokedex", icon: List, label: "Aquarium" },
     { to: "/challenges", icon: Award, label: "Challenges" },
+    { to: "/settings", icon: Settings, label: "Settings" }
   ];
 
   const handleLogout = async () => {
@@ -22,7 +25,7 @@ const Navigation = () => {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white/10 backdrop-blur-md border-t border-white/20 py-2 px-4 md:top-0 md:bottom-auto">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white/10 backdrop-blur-md border-t border-white/20 py-2 px-4 md:top-0 md:bottom-auto z-50">
       <div className="max-w-screen-xl mx-auto">
         <ul className="flex justify-around items-center">
           {links.map(({ to, icon: Icon, label }) => {
