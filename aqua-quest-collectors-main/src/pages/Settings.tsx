@@ -164,30 +164,6 @@ const Settings = () => {
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-3 gap-4 mt-6">
-                                <div className="bg-white/5 rounded-xl p-4 text-center">
-                                    <Trophy className="w-5 h-5 text-yellow-300 mx-auto mb-2" />
-                                    <div className="text-lg font-semibold text-cyan-100">
-                                        {gamesPlayed}
-                                    </div>
-                                    <div className="text-xs text-cyan-200/70">Games Played</div>
-                                </div>
-                                <div className="bg-white/5 rounded-xl p-4 text-center">
-                                    <Star className="w-5 h-5 text-yellow-300 mx-auto mb-2" />
-                                    <div className="text-lg font-semibold text-cyan-100">
-                                        {totalScore}
-                                    </div>
-                                    <div className="text-xs text-cyan-200/70">Total Score</div>
-                                </div>
-                                <div className="bg-white/5 rounded-xl p-4 text-center">
-                                    <Shell className="w-5 h-5 text-cyan-300 mx-auto mb-2" />
-                                    <div className="text-lg font-semibold text-cyan-100">
-                                        {highestLevel}
-                                    </div>
-                                    <div className="text-xs text-cyan-200/70">Highest Level</div>
-                                </div>
-                            </div>
-
                             {/* Collectible counts */}
                             <div className="grid grid-cols-3 gap-4 mt-4">
                                 {/* Normal Count */}
