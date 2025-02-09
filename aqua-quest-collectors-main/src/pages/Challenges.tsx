@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
 import { motion } from 'framer-motion';
 import { Star, Timer, Trophy, Users } from 'lucide-react';
+import TrashSlayer from "@/pages/challenges/games/TrashSlayer/TrashSlayer.tsx";
 import { useInteractionSound } from '@/hooks/use-interaction-sound';
 
 
@@ -39,6 +40,15 @@ export const ChallengeWrapper = () => {
       component: PlasticGame,
       difficulty: "Medium",
     },
+    'trash-slasher': {
+      title: "Trash Slasher",
+      description: "Help clean up the ocean by slicing through trash",
+      component: TrashSlayer,
+      difficulty: "Medium",
+      reward: "Legendary Pixel Pufferfish",
+      icon: "🗑️"
+    }
+
   };
 
   const challenge = challenges[challengeId];
@@ -116,6 +126,16 @@ export const ChallengesList = () => {
       activeUsers: 277,
       completionRate: 15,
       icon: "🦈"
+    },
+    {
+      id: "trash-slasher",
+      title: "Trash Slasher",
+      description: "Help clean up the ocean by slicing through trash",
+      reward: "🐡 Legendary Pixel Pufferfish",
+      difficulty: "Medium",
+      activeUsers: 1856,
+      completionRate: 78,
+      icon: "🗑️"
     }
   ];
 
