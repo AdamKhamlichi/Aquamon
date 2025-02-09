@@ -112,7 +112,7 @@ export async function awardFishToUser(userId: string, fishName: FishType) {
     } else {
       console.log(`${awardedVariantName} awarded to user:`, userId);
       toast.success(`Congrats! You won a ${awardedVariantName}!`, {
-        description: "Check your Pokedex to see it in your collection.",
+        description: "Check your Aquarium to see it in your collection.",
         duration: 3000, // 3 seconds
       });
     }
