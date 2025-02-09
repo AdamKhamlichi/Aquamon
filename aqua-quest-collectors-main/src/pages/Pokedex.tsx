@@ -5,6 +5,7 @@ import Navigation from "@/components/Navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { fishData, FishInfo } from "@/types/fishe-types";
+import { useInteractionSound } from "@/hooks/use-interaction-sound";
 
 
 
@@ -83,6 +84,7 @@ const Pokedex = () => {
 
   const handleFishClick = (fish: FishInfo) => setSelectedFish(fish);
   const handleCloseModal = () => setSelectedFish(null);
+  const { handlers } = useInteractionSound();
 
   return (
     <div className="min-h-screen bg-transparent pb-20 md:pb-0 md:pt-20">
@@ -106,6 +108,7 @@ const Pokedex = () => {
             {ownedFish.map((fish) => (
               <motion.div
                 key={fish.id}
+                {...handlers}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 whileHover={{ scale: 1.05 }}

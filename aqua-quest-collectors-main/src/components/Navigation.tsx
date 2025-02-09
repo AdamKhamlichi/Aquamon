@@ -3,8 +3,10 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Fish, Users, MessageCircle, Award, List, LogOut, Settings } from "lucide-react";
 import { signOut } from "@/lib/auth";
+import { useInteractionSound } from "@/hooks/use-interaction-sound";
 
 const Navigation = () => {
+  const { handlers } = useInteractionSound();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -34,6 +36,7 @@ const Navigation = () => {
               <li key={to}>
                 <Link
                   to={to}
+                  {...handlers}
                   className={`flex flex-col items-center p-2 transition-all duration-300 rounded-lg ${isActive
                     ? "text-cyan-300 scale-110 bg-white/20"
                     : "text-white/80 hover:text-cyan-200 hover:scale-105 hover:bg-white/10"
@@ -48,6 +51,7 @@ const Navigation = () => {
           <li>
             <button
               onClick={handleLogout}
+              {...handlers}
               className="flex flex-col items-center p-2 transition-all duration-300 rounded-lg text-white/80 hover:text-cyan-200 hover:scale-105 hover:bg-white/10"
             >
               <LogOut className="w-6 h-6" />

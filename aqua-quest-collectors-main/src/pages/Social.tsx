@@ -5,6 +5,7 @@ import Navigation from "@/components/Navigation";
 import { supabase } from "@/integrations/supabase/client"; // Adjust import path to your setup
 import { motion } from "framer-motion";
 import { fishData } from "@/types/fishe-types";
+import { useInteractionSound } from "@/hooks/use-interaction-sound";
 
 // ---------- UTILS: Random Sea-Themed Emoji Picker -----------
 const seaEmojis = [
@@ -33,23 +34,12 @@ interface UserFish {
   acquired_at: string;
 }
 
-export type FishInfo = {
-  id: number;
-  name: string;
-  rarity: string;
-  level: number;
-  emoji: string;
-  description: string;
-  habitat: string;
-  population?: string;
-  conservationStatus?: string;
-};
-
 
 // ---------- MAIN COMPONENT ----------
 const Social: React.FC = () => {
   // Search input
   const [searchTerm, setSearchTerm] = useState("");
+  const { handlers } = useInteractionSound();
 
   // The list of matching user profiles
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -161,6 +151,7 @@ const Social: React.FC = () => {
           {profiles.map((profile) => (
             <motion.div
               key={profile.id}
+              {...handlers}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}

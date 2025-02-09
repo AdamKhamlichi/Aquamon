@@ -4,6 +4,7 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
+import { useInteractionSound } from '@/hooks/use-interaction-sound';
 
 // Import games
 const CoralGame = React.lazy(() => import('./games/CoralGame/CoralGame'));
@@ -54,6 +55,7 @@ const ChallengeWrapper = () => {
 
 const ChallengesList = () => {
     const navigate = useNavigate();
+    const { handlers } = useInteractionSound();
 
     const challenges = [
         {
@@ -81,6 +83,7 @@ const ChallengesList = () => {
                     {challenges.map((challenge) => (
                         <div
                             key={challenge.id}
+                            {...handlers}
                             className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300"
                         >
                             <div className="flex items-center justify-between mb-4">

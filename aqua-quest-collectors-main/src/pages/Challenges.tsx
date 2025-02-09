@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
 import { motion } from 'framer-motion';
 import { Star, Timer, Trophy, Users } from 'lucide-react';
+import { useInteractionSound } from '@/hooks/use-interaction-sound';
 
 
 // Lazy load the CoralGame component
@@ -66,6 +67,8 @@ export const ChallengeWrapper = () => {
 
 export const ChallengesList = () => {
   const navigate = useNavigate();
+  const { handlers } = useInteractionSound();
+
 
   const challenges = [
     {

@@ -22,11 +22,13 @@ import {
 } from "lucide-react";
 
 import { useAudio } from "@/hooks/use-audio";
+import { useInteractionSound } from "@/hooks/use-interaction-sound";
 // If you want to cross-reference fish info by name/ID
 
 const Settings = () => {
     // Audio states from AudioContext
     const { volume, setVolume, isMuted, setIsMuted, isPlaying, setIsPlaying } = useAudio();
+    const { handlers } = useInteractionSound();
 
     // Local state for user info
     const [user, setUser] = useState<User | null>(null);
@@ -237,7 +239,7 @@ const Settings = () => {
                             {/* Background Music */}
                             <div className="flex items-center justify-between">
                                 <span className="text-cyan-100">Background Music</span>
-                                <Switch checked={isPlaying} onCheckedChange={handleMusicToggle} />
+                                <Switch {...handlers} checked={isPlaying} onCheckedChange={handleMusicToggle} />
                             </div>
 
                             {/* Mute All */}

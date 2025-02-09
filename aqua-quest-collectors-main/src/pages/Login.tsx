@@ -6,9 +6,11 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { signIn, signUp } from "@/lib/auth";
+import { useInteractionSound } from "@/hooks/use-interaction-sound";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { handlers } = useInteractionSound();
   const [loading, setLoading] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
   const [formData, setFormData] = useState({
@@ -36,7 +38,7 @@ const Login = () => {
           toast.error("Passwords don't match!");
           return;
         }
-        
+
         if (formData.username.length < 3) {
           toast.error("Username must be at least 3 characters long");
           return;
@@ -60,7 +62,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-sky-100 to-white p-4">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -133,6 +135,7 @@ const Login = () => {
               type="button"
               variant="ghost"
               className="w-full font-pixel text-sm"
+              {...handlers}
               onClick={() => setIsRegistering(!isRegistering)}
             >
               {isRegistering ? "Already have an account? Login" : "Need an account? Register"}

@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle } from "lucide-react";
+import { useInteractionSound } from "@/hooks/use-interaction-sound";
 
 const Chat = () => {
+  const { handlers } = useInteractionSound();
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -183,6 +185,7 @@ const Chat = () => {
             ].map((question) => (
               <button
                 key={question}
+                {...handlers}
                 onClick={() => setInput(question)}
                 className="px-3 py-1 bg-white/10 hover:bg-white/20 text-cyan-100 rounded-full text-sm backdrop-blur-sm border border-white/10 transition-all"
               >
