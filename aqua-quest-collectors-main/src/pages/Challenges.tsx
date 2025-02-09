@@ -10,6 +10,7 @@ import { Star, Timer, Trophy, Users } from 'lucide-react';
 
 // Lazy load the CoralGame component
 const CoralGame = React.lazy(() => import('./challenges/games/CoralGame/CoralGame'));
+const TurtleGame = React.lazy(() => import('./challenges/games/TurtleGame'));
 
 export const ChallengeWrapper = () => {
   const { challengeId } = useParams();
@@ -23,6 +24,13 @@ export const ChallengeWrapper = () => {
       component: CoralGame,
       difficulty: "Hard",
       reward: "Legendary Pixel Shark"
+    },
+    'turtle-dash': {
+      title: "Turtle Dash",
+      description: "Try to survive the polluted oceans",
+      component: TurtleGame,
+      difficulty: "Hard",
+      reward: "Speedy Turtle"
     }
   };
 
@@ -79,6 +87,16 @@ export const ChallengesList = () => {
       activeUsers: 2156,
       completionRate: 82,
       icon: "🌊"
+    },
+    {
+      id: "turtle-dash",
+      title: "Turtle Dash",
+      description: "Try to survive the polluted oceans",
+      reward: "🐢 Speedy Turtle",
+      difficulty: "Normal, Hard",
+      activeUsers: 2156,
+      completionRate: 82,
+      icon: "🐢"
     }
   ];
 

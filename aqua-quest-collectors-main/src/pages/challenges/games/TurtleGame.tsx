@@ -6,8 +6,9 @@ import turtleImg from "@/assets/baby_turtle.png";
 import trashImg from "@/assets/trash_1.png";
 import backgroundImage from "@/assets/tortoise_background.jpg";
 import sadTurtleImg from '@/assets/baby_turtle_sad.png';
+import AudioInitializer from "@/components/AudioInitializer";
 
-const TortoiseGame = () => {
+const TurtleGame = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const tortoiseYRef = useRef(200);
     const velocityRef = useRef(0);
@@ -209,12 +210,12 @@ const TortoiseGame = () => {
     }, [gameOver]);
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-sky-100 to-white pb-20 md:pb-0 md:pt-20">
+        <div>
             <Navigation />
             <main className="max-w-screen-xl mx-auto px-4 py-8 text-center">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">Tortoise Survival</h1>
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">Turtle Dash</h1>
             <div className="flex justify-center items-center space-x-4">
-                <p className="text-xl font-semibold text-gray-700">Score: {score}</p>
+                <p className="text-xl font-semibold">Score: {score}</p>
                 <Button onClick={() => window.location.reload()} className="mt-4">
                 Restart Game
                 </Button>
@@ -222,10 +223,12 @@ const TortoiseGame = () => {
             <div className="flex justify-center items-center mt-4">
                 <canvas ref={canvasRef} className="border border-black w-[75vw] h-[70vh]" />
                 <img src={gameOver ? sadTurtleImg : turtleImg} alt="Turtle" className="w-40 h-40 ml-4" />
+                
             </div>
+            {/* <AudioInitializer /> */}
             </main>
         </div>
     );
 };
 
-export default TortoiseGame;
+export default TurtleGame;
