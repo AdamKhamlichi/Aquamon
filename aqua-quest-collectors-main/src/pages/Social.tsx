@@ -6,6 +6,8 @@ import { supabase } from "@/integrations/supabase/client"; // Adjust import path
 import { motion } from "framer-motion";
 import { fishData } from "@/types/fishe-types";
 import { useInteractionSound } from "@/hooks/use-interaction-sound";
+import { getFishImageSrc } from "@/types/fishImages";
+
 
 // ---------- UTILS: Random Sea-Themed Emoji Picker -----------
 const seaEmojis = [
@@ -225,7 +227,11 @@ const Social: React.FC = () => {
                         >
                           {/* Basic Info */}
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-2xl">{fishDetail.emoji}</span>
+                            <img
+                              src={getFishImageSrc(fishDetail)}
+                              alt={fishDetail.name}
+                              className="w-12 h-12 object-contain"
+                            />
                             <span className="text-sm italic text-cyan-100/70">
                               Acquired: {new Date(fish.acquired_at).toLocaleString()}
                             </span>

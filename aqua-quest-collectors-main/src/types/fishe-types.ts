@@ -190,7 +190,7 @@ export const baseFishData: FishInfo[] = [
     name: "Baby Whale",
     rarity: "Rare",
     level: 1,
-    emoji: "🐋",
+    emoji: "/images/common/baby_whale.png",
     description: "A small yet mighty whale in training",
     habitat: "Deep Ocean",
     population: "Unknown",
