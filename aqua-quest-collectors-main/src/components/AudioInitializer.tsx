@@ -17,10 +17,10 @@ const AudioInitializer = () => {
         <AnimatePresence>
             {showPrompt && (
                 <motion.div
-                    initial={{ opacity: 0, y: 50 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 50 }}
-                    className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50"
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 50 }}
+                    className="fixed bottom-20 right-4 z-50"
                 >
                     <button
                         onClick={handleInitialize}

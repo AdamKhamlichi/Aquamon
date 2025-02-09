@@ -28,6 +28,7 @@ interface UnderwaterContextType {
 }
 
 // This context will be used to share bubble/fish counts with other components
+// eslint-disable-next-line react-refresh/only-export-components
 export const UnderwaterContext = createContext<UnderwaterContextType>({
   bubbleCount: 0,
   fishCount: 0,
