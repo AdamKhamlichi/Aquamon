@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { fishData, FishInfo } from "@/types/fishe-types";
 import { useInteractionSound } from "@/hooks/use-interaction-sound";
+import { getFishImageSrc } from "@/types/fishImages";
 
 
 
@@ -115,9 +116,11 @@ const Pokedex = () => {
                 className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-lg hover:shadow-cyan-500/20 transition-all duration-300 cursor-pointer"
                 onClick={() => handleFishClick(fish)}
               >
-                <div className="aspect-square rounded-xl bg-cyan-500/10 mb-4 flex items-center justify-center animate-float">
-                  <span className="text-6xl">{fish.emoji}</span>
-                </div>
+                <img
+                  src={getFishImageSrc(fish)}
+                  alt={fish.name}
+                  className="w-12 h-12 object-contain"
+                />
                 <h3 className="text-xl font-semibold mb-2 text-cyan-100">
                   {fish.name}
                 </h3>
@@ -193,9 +196,11 @@ const Pokedex = () => {
                 className="relative w-full max-w-lg bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-lg z-10"
               >
                 <div className="text-center mb-4">
-                  <h2 className="text-3xl font-pixel text-cyan-100 flex items-center justify-center gap-2">
-                    <span>{selectedFish.emoji}</span> {selectedFish.name}
-                  </h2>
+                  <img
+                    src={getFishImageSrc(selectedFish)}
+                    alt={selectedFish.name}
+                    className="w-12 h-12 object-contain text-center"
+                  />
                   <p className="text-sm text-cyan-200/70">
                     Level {selectedFish.level} · {selectedFish.rarity}
                   </p>

@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// File: src/pages/Settings.tsx
-
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Navigation from "@/components/Navigation";
@@ -15,20 +13,21 @@ import {
     Music,
     Shell,
     User as UserIcon,
-    Star,
-    Trophy,
     Settings as SettingsIcon,
     Fish,
 } from "lucide-react";
 
 import { useAudio } from "@/hooks/use-audio";
-import { useInteractionSound } from "@/hooks/use-interaction-sound";
-// If you want to cross-reference fish info by name/ID
+
+
+// Helper function for a default user avatar image.
+function getDefaultUserAvatar(): string {
+    return "/image/common/default_avatar.png";
+}
 
 const Settings = () => {
     // Audio states from AudioContext
     const { volume, setVolume, isMuted, setIsMuted, isPlaying, setIsPlaying } = useAudio();
-    const { handlers } = useInteractionSound();
 
     // Local state for user info
     const [user, setUser] = useState<User | null>(null);
@@ -49,22 +48,7 @@ const Settings = () => {
             setUser(currentUser);
 
             if (currentUser) {
-                // 2) You might fetch stats from a "profiles" table or "stats" table if you have one
-                // or handle it in your own custom logic.
-                // Example placeholder of how you might retrieve "gamesPlayed" or "totalScore":
-                /*
-                const { data: profileData } = await supabase
-                  .from("profiles")
-                  .select("games_played, total_score, highest_level")
-                  .eq("id", currentUser.id)
-                  .single();
-
-                if (profileData) {
-                  setGamesPlayed(profileData.games_played);
-                  setTotalScore(profileData.total_score);
-                  setHighestLevel(profileData.highest_level);
-                }
-                */
+                // 2) (Optional) Fetch additional stats from your DB if you have one
 
                 // 3) Now fetch the user's owned species from user_marine_species
                 const { data, error } = await supabase
@@ -73,21 +57,17 @@ const Settings = () => {
                     .eq("user_id", currentUser.id);
 
                 if (data && !error) {
-                    // Suppose you handle "shiny" or "normal" in your DB:
-                    // We'll do a simplistic approach: match them with fishData
-                    // Then count how many have a "shiny" property if you keep that in your DB.
                     let normalCount = 0;
-                    const shinyCount = 0;
-
-                    // If your DB has a boolean "is_shiny" column, you'd check it here.
-                    // For now, let's assume half are "normal" by your logic; you can adapt as needed:
+                    let shinyCount = 0;
 
                     data.forEach((row: any) => {
-                        // row.marine_species is something like { id: x, name: "...", ... }
-                        // If you do store "is_shiny" in your DB, do:
-                        // if (row.marine_species.is_shiny) shinyCount++;
-                        // else normalCount++;
-                        normalCount++;
+                        // Check if the fish name starts with "Shiny "
+                        const fishName: string = row.marine_species?.name || "";
+                        if (fishName.startsWith("Shiny ")) {
+                            shinyCount++;
+                        } else {
+                            normalCount++;
+                        }
                     });
 
                     setCollectedNormal(normalCount);
@@ -153,7 +133,13 @@ const Settings = () => {
                         <div className="space-y-4">
                             <div className="flex justify-center mb-6">
                                 <div className="w-24 h-24 rounded-full bg-cyan-500/20 border-2 border-cyan-300/20 flex items-center justify-center">
-                                    <Shell className="w-12 h-12 text-cyan-200" />
+                                    (
+                                    <img
+                                        src={getDefaultUserAvatar()}
+                                        alt="default avatar"
+                                        className="w-full h-full object-cover rounded-full"
+                                    />
+                                    )
                                 </div>
                             </div>
 
@@ -239,7 +225,7 @@ const Settings = () => {
                             {/* Background Music */}
                             <div className="flex items-center justify-between">
                                 <span className="text-cyan-100">Background Music</span>
-                                <Switch {...handlers} checked={isPlaying} onCheckedChange={handleMusicToggle} />
+                                <Switch checked={isPlaying} onCheckedChange={handleMusicToggle} />
                             </div>
 
                             {/* Mute All */}

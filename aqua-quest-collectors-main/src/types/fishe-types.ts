@@ -29,8 +29,8 @@ export type FishInfo = {
   conservationStatus?: string;
 };
 
-// Base fish data (the original 16 entries)
-export const baseFishData: FishInfo[] = [
+// Your fishData, including Baby Whale (ID=15).
+export const fishData: FishInfo[] = [
   {
     id: 1,
     name: "Pixel Puffer",
@@ -208,19 +208,3 @@ export const baseFishData: FishInfo[] = [
     conservationStatus: "Data Missing",
   },
 ];
-
-// Generate shiny versions of the fish from the base data
-export const shinyFishData: FishInfo[] = baseFishData.map((fish) => ({
-  id: fish.id + baseFishData.length, // New IDs from 17 to 32
-  name: `Shiny ${fish.name}`,
-  rarity: `Shiny ${fish.rarity}`,
-  level: fish.level,
-  emoji: fish.emoji,
-  description: fish.description,
-  habitat: fish.habitat,
-  population: fish.population,
-  conservationStatus: fish.conservationStatus,
-}));
-
-// Final fishData now contains both the original and shiny versions
-export const fishData: FishInfo[] = [...baseFishData, ...shinyFishData];
